@@ -1,0 +1,145 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Help section styling */
+.help-section {
+  width: 250px;
+  background-color: #f4f4f4;
+  padding: 20px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.help-part {
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
+}
+
+.help-part h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.help-part p {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #666;
+}
+
+/* Layout for content and help section */
+.container {
+  display: flex;
+  flex-grow: 1;
+}
+
+/* Main content area styling */
+.content-area {
+  flex-grow: 1;
+  padding: 20px;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+}
+
+.content-area h2 {
+  font-size: 24px;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.interactive-sections {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.section {
+  width: 30%;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.section h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.section:hover {
+  background-color: #e9ecef;
+}
+
+.controls {
+  margin-top: 10px;
+}
+
+.controls button {
+  padding: 10px 15px;
+  margin-right: 10px;
+  font-size: 14px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.controls button:hover {
+  background-color: #0056b3;
+}
+
+/* Lists area */
+.lists-section {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.list {
+  width: 30%;
+  background-color: #f0f0f0;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.list h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.item-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.item-list li {
+  font-size: 16px;
+  padding: 5px 0;
+}
+
+.remove-btn {
+  margin-top: 10px;
+  background-color: #dc3545;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.remove-btn:hover {
+  background-color: #c82333;
+}
