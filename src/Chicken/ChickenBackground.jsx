@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "../Styling/BackgroundResearch.css";
 
 function ReturnChickenBackgroundResearch() {
   const Navigate = useNavigate();

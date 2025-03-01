@@ -1,0 +1,28 @@
+/* Default Button */
+.button-active {
+  padding: 12px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  background-color: "green"; /* Blue */
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* Hover Effect */
+.button-active:hover {
+  background-color: #0056b3; /* Darker blue */
+}
+
+/* Disabled (Running) Button */
+.button-disabled {
+  padding: 12px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  background-color: #ccc; /* Grey */
+  color: black;
+  border: none;
+  cursor: not-allowed;
+  opacity: 0.7;
+}

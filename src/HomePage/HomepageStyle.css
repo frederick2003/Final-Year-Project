@@ -1,0 +1,241 @@
+/* HomeStyle.css */
+:root {
+  --primary-color: #3498db;
+  --secondary-color: #2ecc71;
+  --accent-color: #f39c12;
+  --dark-color: #2c3e50;
+  --light-color: #ecf0f1;
+  --border-radius: 8px;
+  --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --transition: all 0.3s ease;
+}
+
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f7fa;
+  color: var(--dark-color);
+}
+
+/* Header styling */
+h1 {
+  text-align: center;
+  color: var(--dark-color);
+  padding: 15px 0;
+  margin-top: 0;
+  background-color: var(--light-color);
+  border-bottom: 3px solid var(--primary-color);
+  font-size: 2rem;
+}
+
+h2 {
+  color: var(--dark-color);
+  border-left: 4px solid var(--primary-color);
+  padding-left: 12px;
+  margin: 15px 0 10px;
+  font-size: 1.5rem;
+}
+
+h3 {
+  color: var(--dark-color);
+  font-weight: 500;
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+}
+
+/* Horizontal experiment layout */
+.experiments-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  width: 95%;
+  max-width: 1200px;
+  margin: 15px auto;
+}
+
+.experiment-section {
+  width: 32%;
+  margin-bottom: 15px;
+}
+
+.card {
+  background-color: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  overflow: hidden;
+  transition: var(--transition);
+  border: 1px solid #e0e0e0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.card button {
+  padding: 12px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.card button:hover {
+  background-color: #2980b9;
+}
+
+.card-body {
+  padding: 15px;
+  line-height: 1.4;
+  font-size: 0.95rem;
+  flex-grow: 1;
+}
+
+/* Help section styling */
+.help-section {
+  width: 95%;
+  max-width: 1200px;
+  margin: 15px auto 10px;
+  padding: 15px;
+  background-color: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+
+/* Accordion styling - horizontal layout */
+.accordion-container {
+  width: 95%;
+  max-width: 1200px;
+  margin: 0 auto 20px;
+}
+
+.accordion {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.accordion-item {
+  width: 32%;
+  border: 1px solid #e0e0e0;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.accordion-header {
+  margin: 0;
+}
+
+.accordion-button {
+  width: 100%;
+  padding: 12px 15px;
+  font-size: 1rem;
+  color: var(--dark-color);
+  background-color: var(--light-color);
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+}
+
+.accordion-button:not(.collapsed) {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.accordion-button::after {
+  content: "+";
+  position: absolute;
+  right: 15px;
+  transition: var(--transition);
+}
+
+.accordion-button:not(.collapsed)::after {
+  content: "−";
+}
+
+.accordion-body {
+  padding: 15px;
+  background-color: white;
+  font-size: 0.9rem;
+}
+
+.accordion-body strong {
+  color: var(--primary-color);
+}
+
+.accordion-body ul {
+  padding-left: 18px;
+  margin-top: 10px;
+}
+
+.accordion-body li {
+  margin-bottom: 8px;
+}
+
+/* Different colors for each experiment type */
+.experiment-section:nth-child(1) .card button {
+  background-color: var(--primary-color);
+}
+
+.experiment-section:nth-child(2) .card button {
+  background-color: var(--secondary-color);
+}
+
+.experiment-section:nth-child(3) .card button {
+  background-color: var(--accent-color);
+}
+
+/* Different colors for each stage */
+.accordion-item:nth-child(1) .accordion-button:not(.collapsed) {
+  background-color: var(--primary-color);
+}
+
+.accordion-item:nth-child(2) .accordion-button:not(.collapsed) {
+  background-color: #5dade2;
+}
+
+.accordion-item:nth-child(3) .accordion-button:not(.collapsed) {
+  background-color: var(--secondary-color);
+}
+
+.accordion-item:nth-child(4) .accordion-button:not(.collapsed) {
+  background-color: #58d68d;
+}
+
+.accordion-item:nth-child(5) .accordion-button:not(.collapsed) {
+  background-color: var(--accent-color);
+}
+
+.accordion-item:nth-child(6) .accordion-button:not(.collapsed) {
+  background-color: #f5b041;
+}
+
+/* Responsive design */
+@media (max-width: 992px) {
+  .experiment-section,
+  .accordion-item {
+    width: 49%;
+  }
+}
+
+@media (max-width: 768px) {
+  .experiment-section,
+  .accordion-item {
+    width: 100%;
+  }
+
+  h1 {
+    font-size: 1.7rem;
+  }
+}

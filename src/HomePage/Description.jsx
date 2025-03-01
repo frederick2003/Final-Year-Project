@@ -1,12 +1,14 @@
+import "./HomepageStyle.css";
+
 import React from "react";
 
 function MicroworldDescription() {
   return (
-    <div class="accordion" id="accordionPanelsStayOpenExample">
-      <div class="accordion-item">
-        <h2 class="accordion-header">
+    <div className="accordion" id="accordionPanelsStayOpenExample">
+      <div className="accordion-item">
+        <h2 className="accordion-header">
           <button
-            class="accordion-button"
+            className="accordion-button"
             type="button"
             data-bs-toggle="collapse"
             data-bs-target="#panelsStayOpen-collapseOne"
@@ -18,9 +20,9 @@ function MicroworldDescription() {
         </h2>
         <div
           id="panelsStayOpen-collapseOne"
-          class="accordion-collapse collapse show"
+          className="accordion-collapse collapse show"
         >
-          <div class="accordion-body">
+          <div className="accordion-body">
             <strong>
               During Stage 1: Background Research you are expected to:
             </strong>
@@ -30,23 +32,23 @@ function MicroworldDescription() {
                 the experiment.
               </li>
               <li>
-                <strong>Record: </strong>Take down infomation that you thing
-                will be important when you are conducting your experiment
+                <strong>Record: </strong>Take down information that you think
+                will be important when you are conducting your experiment.
               </li>
               <li>
-                <strong>Remember: </strong> Try your best to rember the relevent
-                information to be used in the experiment. Don't worry you will
-                still be able to access this information throught the experiment
-                process.
+                <strong>Remember: </strong>Try your best to remember the
+                relevant information to be used in the experiment. Don't worry
+                you will still be able to access this information throughout the
+                experiment process.
               </li>
             </ul>
           </div>
         </div>
       </div>
-      <div class="accordion-item">
-        <h2 class="accordion-header">
+      <div className="accordion-item">
+        <h2 className="accordion-header">
           <button
-            class="accordion-button collapsed"
+            className="accordion-button collapsed"
             type="button"
             data-bs-toggle="collapse"
             data-bs-target="#panelsStayOpen-collapseTwo"
@@ -58,18 +60,18 @@ function MicroworldDescription() {
         </h2>
         <div
           id="panelsStayOpen-collapseTwo"
-          class="accordion-collapse collapse"
+          className="accordion-collapse collapse"
         >
-          <div class="accordion-body">
+          <div className="accordion-body">
             Add here an easily understandable description of what needs to be
             carried out in stage 2.
           </div>
         </div>
       </div>
-      <div class="accordion-item">
-        <h2 class="accordion-header">
+      <div className="accordion-item">
+        <h2 className="accordion-header">
           <button
-            class="accordion-button collapsed"
+            className="accordion-button collapsed"
             type="button"
             data-bs-toggle="collapse"
             data-bs-target="#panelsStayOpen-collapseThree"
@@ -81,78 +83,78 @@ function MicroworldDescription() {
         </h2>
         <div
           id="panelsStayOpen-collapseThree"
-          class="accordion-collapse collapse"
+          className="accordion-collapse collapse"
         >
-          <div class="accordion-body">
+          <div className="accordion-body">
             Add here an easily understandable description of what needs to be
             carried out in stage 3.
           </div>
         </div>
       </div>
-      <div class="accordion-item">
-        <h2 class="accordion-header">
+      <div className="accordion-item">
+        <h2 className="accordion-header">
           <button
-            class="accordion-button collapsed"
+            className="accordion-button collapsed"
             type="button"
             data-bs-toggle="collapse"
-            data-bs-target="#panelsStayOpen-collapseThree"
+            data-bs-target="#panelsStayOpen-collapseFour"
             aria-expanded="false"
-            aria-controls="panelsStayOpen-collapseThree"
+            aria-controls="panelsStayOpen-collapseFour"
           >
-            <strong> Stage 4: Experimentation</strong>
+            <strong>Stage 4: Experimentation</strong>
           </button>
         </h2>
         <div
-          id="panelsStayOpen-collapseThree"
-          class="accordion-collapse collapse"
+          id="panelsStayOpen-collapseFour"
+          className="accordion-collapse collapse"
         >
-          <div class="accordion-body">
+          <div className="accordion-body">
             Add here an easily understandable description of what needs to be
             carried out in stage 4.
           </div>
         </div>
       </div>
-      <div class="accordion-item">
-        <h2 class="accordion-header">
+      <div className="accordion-item">
+        <h2 className="accordion-header">
           <button
-            class="accordion-button collapsed"
+            className="accordion-button collapsed"
             type="button"
             data-bs-toggle="collapse"
-            data-bs-target="#panelsStayOpen-collapseThree"
+            data-bs-target="#panelsStayOpen-collapseFive"
             aria-expanded="false"
-            aria-controls="panelsStayOpen-collapseThree"
+            aria-controls="panelsStayOpen-collapseFive"
           >
-            <strong> Stage 5: Results</strong>
+            <strong>Stage 5: Results</strong>
           </button>
         </h2>
         <div
-          id="panelsStayOpen-collapseThree"
-          class="accordion-collapse collapse"
+          id="panelsStayOpen-collapseFive"
+          className="accordion-collapse collapse"
         >
-          <div class="accordion-body">
+          <div className="accordion-body">
             Add here an easily understandable description of what needs to be
             carried out in stage 5.
           </div>
         </div>
       </div>
-      <div class="accordion-item">
-        <h2 class="accordion-header">
+      <div className="accordion-item">
+        <h2 className="accordion-header">
           <button
-            class="accordion-button collapsed"
+            className="accordion-button collapsed"
             type="button"
             data-bs-toggle="collapse"
-            data-bs-target="#panelsStayOpen-collapseThree"
+            data-bs-target="#panelsStayOpen-collapseSix"
             aria-expanded="false"
-            aria-controls="panelsStayOpen-collapseThree"
+            aria-controls="panelsStayOpen-collapseSix"
           >
-            <strong> Stage 6: Conclusion</strong>
+            <strong>Stage 6: Conclusion</strong>
           </button>
         </h2>
         <div
-          id="panelsStayOpen-collapseThree"
-          class="accordion-collapse collapse"
+          id="panelsStayOpen-collapseSix"
+          className="accordion-collapse collapse"
         >
-          <div class="accordion-body">
+          <div className="accordion-body">
             Add here an easily understandable description of what needs to be
             carried out in stage 6.
           </div>

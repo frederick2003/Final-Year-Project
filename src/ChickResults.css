@@ -1,0 +1,164 @@
+/* Main container styling for consistent layout and spacing */
+.results-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: Arial, sans-serif;
+  background-color: #ffffff;
+}
+
+/* Grid container for 2x2 chart layout */
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+/* Header styling with a subtle bottom border for visual separation */
+h1 {
+  color: #2c3e50;
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 3px solid #edf2f7;
+}
+
+/* Subheader styling for chart sections */
+h2 {
+  color: #34495e;
+  font-size: 1.5rem;
+  margin: 1rem 0;
+  padding-left: 0.5rem;
+  border-left: 4px solid #3498db;
+}
+
+/* Chart container styling for consistent spacing and responsive layout */
+.chart-container {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Chart wrapper adjustments for grid layout */
+.chart-wrapper {
+  position: relative;
+  height: 300px;
+  flex-grow: 1;
+  min-height: 0;
+}
+
+/* Table styling for clear data presentation */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Table header styling */
+thead {
+  background-color: #f8fafc;
+}
+
+th {
+  padding: 1rem;
+  text-align: left;
+  color: #2c3e50;
+  font-weight: 600;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* Table cell styling */
+td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  color: #4a5568;
+}
+
+/* Alternating row colors for better readability */
+tr:nth-child(even) {
+  background-color: #f8fafc;
+}
+
+/* Hover effect on table rows */
+tr:hover {
+  background-color: #edf2f7;
+}
+
+/* "No results" message styling */
+.no-results {
+  text-align: center;
+  color: #718096;
+  font-size: 1.25rem;
+  padding: 2rem;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  margin: 2rem 0;
+}
+
+/* Media queries for responsive design */
+@media (max-width: 968px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .results-container {
+    padding: 1rem;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+  }
+
+  .chart-wrapper {
+    height: 250px;
+  }
+
+  table {
+    font-size: 0.875rem;
+  }
+
+  th,
+  td {
+    padding: 0.75rem;
+  }
+}
+
+/* Print styles for better paper output */
+@media print {
+  .results-container {
+    padding: 0;
+  }
+
+  .charts-grid {
+    gap: 1rem;
+  }
+
+  .chart-container {
+    box-shadow: none;
+    break-inside: avoid;
+  }
+
+  table {
+    box-shadow: none;
+  }
+
+  th {
+    background-color: #f8fafc !important;
+    color: #000000;
+  }
+}

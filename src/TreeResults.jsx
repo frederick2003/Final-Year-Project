@@ -1,25 +1,22 @@
-import React from "react";
+import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Line, Bar } from "react-chartjs-2";
+import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
-  BarElement,
   Title,
   Tooltip,
   Legend,
 } from "chart.js";
 
-// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
-  BarElement,
   Title,
   Tooltip,
   Legend
@@ -28,12 +25,14 @@ ChartJS.register(
 function ResultsPage() {
   const Navigate = useNavigate();
   const goToConclusion = () => {
-    Navigate("/conclusion");
+    Navigate("/TreeConclusion", { state: { results, controlResults } });
   };
   const location = useLocation();
   const { results, controlResults } = location.state || {
     results: [],
     controlResults: [],
+    firstValue: "",
+    comparisionValue: "",
   };
 
   // Group results by experiment number
@@ -55,74 +54,25 @@ function ResultsPage() {
     });
   }
 
-  // Color options for different runs
-  const colorPalette = [
-    "rgba(255, 99, 132, 1)",
-    "rgba(54, 162, 235, 1)",
-    "rgba(255, 206, 86, 1)",
-    "rgba(75, 192, 192, 1)",
-    "rgba(153, 102, 255, 1)",
-    "rgba(255, 159, 64, 1)",
-  ];
-
-  const datasets = Object.keys(groupedResults)
-    .map((experiment, index) => {
-      const data = groupedResults[experiment];
-
-      return [
-        {
-          label: `Height (Exp ${experiment})`,
-          data: data.map((result) => result.height),
-          borderColor: colorPalette[index % colorPalette.length],
-          backgroundColor: colorPalette[index % colorPalette.length].replace(
-            "1)",
-            "0.2)"
-          ),
-          tension: 0.4,
-        },
-        {
-          label: `Diameter (Exp ${experiment})`,
-          data: data.map((result) => result.diameter),
-          borderColor: colorPalette[(index + 1) % colorPalette.length],
-          backgroundColor: colorPalette[
-            (index + 1) % colorPalette.length
-          ].replace("1)", "0.2)"),
-          tension: 0.4,
-        },
-      ];
-    })
-    .flat(); // Flatten array since map creates nested arrays
-
-  const labels =
-    results.length > 0
-      ? groupedResults[1].map((result) => `Year ${result.year}`)
-      : [];
-
-  const data = {
-    labels,
-    datasets,
-  };
+  const experimentColor = "rgba(54, 162, 235, 1)"; // Blue for experiment
+  const controlColor = "rgba(255, 99, 132, 1)"; // Red for control
 
   const options = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: "bottom",
         labels: {
-          boxWidth: 10, // Reduce legend box size
-          font: {
-            size: 10, // Smaller font for legend
-          },
+          boxWidth: 10,
+          font: { size: 12 },
         },
       },
       title: {
         display: true,
-        text: "Tree Growth Over Time Across Experiments",
-      },
-    },
-    layout: {
-      padding: {
-        bottom: 20, // Add padding for bottom legend
+        text: "Tree Growth Over Time",
+        font: { size: 16 },
+        padding: 20,
       },
     },
     scales: {
@@ -130,135 +80,321 @@ function ResultsPage() {
         min: 0,
         title: {
           display: true,
-          text: "Growth Measurement",
+          text: "Height (m)",
+          font: { size: 14 },
         },
       },
       x: {
         title: {
           display: true,
           text: "Years",
+          font: { size: 14 },
         },
       },
     },
   };
 
+  const suggestedConclusions = [
+    "The trees exposed to conditions [experiment conditions] grew more than the trees exposed to [control conditions].",
+    "The trees exposed to conditions [experiment conditions] actually grew less over time than the trees exposed to [control conditions]",
+    "The trees exposed to conditions [experiment conditions] grew at almost the same rate over time than the trees exposed to [control conditions]",
+    "Too many trees fell down during the running of the experiment. As such accurate results were not achieved",
+  ];
+
+  const [selectedConclusion, setSelectedConclusion] = useState(
+    suggestedConclusions[0]
+  );
+
+  const handleConclusionChange = (event) => {
+    setSelectedConclusion(event.target.value);
+  };
+
+  const [answers, setAnswers] = useState({});
+  const [showQuestions, setShowQuestions] = useState(false);
+
+  const reflectionQuestions = [
+    "Do you think the extreme weather could effect the results you obtained?",
+    "Do you think that variable [Z] that you didn't control could have had an effect on the rate of growth over time?",
+    "Reflection question 3.",
+    "Reflection question 4.",
+    "Reflection question 5.",
+  ];
+
+  const handleAnswerChange = (index, value) => {
+    setAnswers((prevAnswers) => ({
+      ...prevAnswers,
+      [index]: value,
+    }));
+  };
+
   return (
-    <div>
-      <h1>Experiment Results</h1>
+    <div style={{ padding: "20px", maxWidth: "1400px", margin: "0 auto" }}>
+      <h1 style={{ textAlign: "center", marginBottom: "30px" }}>
+        Experiment Results
+      </h1>
       {results.length > 0 ? (
         <div>
-          {Object.keys(groupedResults).map((experiment, index) => {
-            const heightData = {
-              labels: groupedResults[experiment].map(
-                (result) => `Year ${result.year}`
-              ),
+          {Object.keys(groupedResults).map((experiment) => {
+            const labels = groupedResults[experiment].map(
+              (result) => `Year ${result.year}`
+            );
+
+            const chartData = {
+              labels,
               datasets: [
                 {
-                  label: `Height (Exp ${experiment})`,
+                  label: `Experiment ${experiment}`,
                   data: groupedResults[experiment].map(
                     (result) => result.height
                   ),
-                  borderColor: colorPalette[index % colorPalette.length],
-                  backgroundColor: colorPalette[
-                    index % colorPalette.length
-                  ].replace("1)", "0.2)"),
+                  borderColor: experimentColor,
+                  backgroundColor: experimentColor.replace("1)", "0.2)"),
                   tension: 0.4,
                 },
+                ...(groupedControlResults[experiment]
+                  ? [
+                      {
+                        label: `Control ${experiment}`,
+                        data: groupedControlResults[experiment].map(
+                          (result) => result.height
+                        ),
+                        borderColor: controlColor,
+                        backgroundColor: controlColor.replace("1)", "0.2)"),
+                        tension: 0.4,
+                      },
+                    ]
+                  : []),
               ],
             };
 
-            const diameterData = {
-              labels: groupedResults[experiment].map(
-                (result) => `Year ${result.year}`
-              ),
-              datasets: [
-                {
-                  label: `Diameter (Exp ${experiment})`,
-                  data: groupedResults[experiment].map(
-                    (result) => result.diameter
-                  ),
-                  borderColor: colorPalette[(index + 1) % colorPalette.length],
-                  backgroundColor: colorPalette[
-                    (index + 1) % colorPalette.length
-                  ].replace("1)", "0.2)"),
-                  tension: 0.4,
-                },
-              ],
-            };
+            // Create an array of years to ensure alignment
+            const allYears = [
+              ...new Set([
+                ...groupedResults[experiment].map((r) => r.year),
+                ...(groupedControlResults[experiment]?.map((r) => r.year) ||
+                  []),
+              ]),
+            ].sort((a, b) => a - b);
 
             return (
               <div
                 key={experiment}
-                style={{ display: "flex", marginBottom: "20px" }}
+                style={{
+                  marginBottom: "40px",
+                  backgroundColor: "#fff",
+                  padding: "20px",
+                  borderRadius: "8px",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                }}
               >
-                {/* Left side: Graphs */}
-                <div style={{ flex: 1, marginRight: "20px" }}>
-                  <h3>Experiment {experiment}</h3>
+                <h3 style={{ marginBottom: "20px" }}>
+                  Experiment {experiment}
+                </h3>
 
-                  {/* Height Graph */}
-                  <h4>Height Growth</h4>
-                  <Line data={heightData} options={options} />
-
-                  {/* Diameter Graph */}
-                  <h4>Diameter Growth</h4>
-                  <Line data={diameterData} options={options} />
+                {/* Graph Container */}
+                <div style={{ height: "450px", marginBottom: "30px" }}>
+                  <Line data={chartData} options={options} />
                 </div>
 
-                {/* Right side: Table */}
-                <div style={{ flex: 1 }}>
-                  <h4>Textual Results</h4>
-                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                    <thead>
-                      <tr>
-                        <th
-                          style={{ border: "1px solid #ccc", padding: "8px" }}
+                {/* Tables Container */}
+                <div style={{ display: "flex", gap: "30px" }}>
+                  {/* Experiment Table */}
+                  <div style={{ flex: 1 }}>
+                    <h4 style={{ marginBottom: "15px" }}>Experiment Results</h4>
+                    <div style={{ overflowX: "auto" }}>
+                      <table
+                        style={{ width: "100%", borderCollapse: "collapse" }}
+                      >
+                        <thead>
+                          <tr>
+                            <th
+                              style={{
+                                border: "1px solid #ccc",
+                                padding: "12px",
+                                backgroundColor: "#f8f9fa",
+                              }}
+                            >
+                              Year
+                            </th>
+                            <th
+                              style={{
+                                border: "1px solid #ccc",
+                                padding: "12px",
+                                backgroundColor: "#f8f9fa",
+                              }}
+                            >
+                              Height (m)
+                            </th>
+                            <th
+                              style={{
+                                border: "1px solid #ccc",
+                                padding: "12px",
+                                backgroundColor: "#f8f9fa",
+                              }}
+                            >
+                              Age (years)
+                            </th>
+                            <th
+                              style={{
+                                border: "1px solid #ccc",
+                                padding: "12px",
+                                backgroundColor: "#f8f9fa",
+                              }}
+                            >
+                              Event
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {allYears.map((year) => {
+                            const result = groupedResults[experiment].find(
+                              (r) => r.year === year
+                            );
+                            return (
+                              <tr key={year}>
+                                <td
+                                  style={{
+                                    border: "1px solid #ccc",
+                                    padding: "12px",
+                                  }}
+                                >
+                                  {year}
+                                </td>
+                                <td
+                                  style={{
+                                    border: "1px solid #ccc",
+                                    padding: "12px",
+                                  }}
+                                >
+                                  {result ? result.height : "-"}
+                                </td>
+                                <td
+                                  style={{
+                                    border: "1px solid #ccc",
+                                    padding: "12px",
+                                  }}
+                                >
+                                  {result ? result.age : "-"}
+                                </td>
+                                <td
+                                  style={{
+                                    border: "1px solid #ccc",
+                                    padding: "12px",
+                                    color:
+                                      result?.event !== "No major event"
+                                        ? "red"
+                                        : "black",
+                                  }}
+                                >
+                                  {result ? result.event : "-"}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Control Table */}
+                  {groupedControlResults[experiment] && (
+                    <div style={{ flex: 1 }}>
+                      <h4 style={{ marginBottom: "15px" }}>Control Results</h4>
+                      <div style={{ overflowX: "auto" }}>
+                        <table
+                          style={{ width: "100%", borderCollapse: "collapse" }}
                         >
-                          Year
-                        </th>
-                        <th
-                          style={{ border: "1px solid #ccc", padding: "8px" }}
-                        >
-                          Height (m)
-                        </th>
-                        <th
-                          style={{ border: "1px solid #ccc", padding: "8px" }}
-                        >
-                          Diameter (cm)
-                        </th>
-                        <th
-                          style={{ border: "1px solid #ccc", padding: "8px" }}
-                        >
-                          Age (years)
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {groupedResults[experiment].map((result, rowIndex) => (
-                        <tr key={rowIndex}>
-                          <td
-                            style={{ border: "1px solid #ccc", padding: "8px" }}
-                          >
-                            {result.year}
-                          </td>
-                          <td
-                            style={{ border: "1px solid #ccc", padding: "8px" }}
-                          >
-                            {result.height}
-                          </td>
-                          <td
-                            style={{ border: "1px solid #ccc", padding: "8px" }}
-                          >
-                            {result.diameter}
-                          </td>
-                          <td
-                            style={{ border: "1px solid #ccc", padding: "8px" }}
-                          >
-                            {result.age}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                          <thead>
+                            <tr>
+                              <th
+                                style={{
+                                  border: "1px solid #ccc",
+                                  padding: "12px",
+                                  backgroundColor: "#f8f9fa",
+                                }}
+                              >
+                                Year
+                              </th>
+                              <th
+                                style={{
+                                  border: "1px solid #ccc",
+                                  padding: "12px",
+                                  backgroundColor: "#f8f9fa",
+                                }}
+                              >
+                                Height (m)
+                              </th>
+                              <th
+                                style={{
+                                  border: "1px solid #ccc",
+                                  padding: "12px",
+                                  backgroundColor: "#f8f9fa",
+                                }}
+                              >
+                                Age (years)
+                              </th>
+                              <th
+                                style={{
+                                  border: "1px solid #ccc",
+                                  padding: "12px",
+                                  backgroundColor: "#f8f9fa",
+                                }}
+                              >
+                                Event
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {allYears.map((year) => {
+                              const result = groupedControlResults[
+                                experiment
+                              ].find((r) => r.year === year);
+                              return (
+                                <tr key={year}>
+                                  <td
+                                    style={{
+                                      border: "1px solid #ccc",
+                                      padding: "12px",
+                                    }}
+                                  >
+                                    {year}
+                                  </td>
+                                  <td
+                                    style={{
+                                      border: "1px solid #ccc",
+                                      padding: "12px",
+                                    }}
+                                  >
+                                    {result ? result.height : "-"}
+                                  </td>
+                                  <td
+                                    style={{
+                                      border: "1px solid #ccc",
+                                      padding: "12px",
+                                    }}
+                                  >
+                                    {result ? result.age : "-"}
+                                  </td>
+                                  <td
+                                    style={{
+                                      border: "1px solid #ccc",
+                                      padding: "12px",
+                                      color:
+                                        result?.event !== "No major event"
+                                          ? "red"
+                                          : "black",
+                                    }}
+                                  >
+                                    {result ? result.event : "-"}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -267,46 +403,90 @@ function ResultsPage() {
       ) : (
         <p>No results available to display.</p>
       )}
-      {controlResults.length > 0 && (
+      <div>
         <div>
-          <h2>Control Experiment Results</h2>
-          {Object.keys(groupedControlResults).map((experiment, index) => {
-            const data = {
-              labels: groupedControlResults[experiment].map(
-                (result) => `Year ${result.year}`
-              ),
-              datasets: [
-                {
-                  label: `Height (Control Exp ${experiment})`,
-                  data: groupedControlResults[experiment].map(
-                    (result) => result.height
-                  ),
-                  borderColor: "rgba(255, 99, 132, 1)",
-                  backgroundColor: "rgba(255, 99, 132, 0.2)",
-                  tension: 0.4,
-                },
-                {
-                  label: `Diameter (Control Exp ${experiment})`,
-                  data: groupedControlResults[experiment].map(
-                    (result) => result.diameter
-                  ),
-                  borderColor: "rgba(255, 159, 64, 1)",
-                  backgroundColor: "rgba(255, 159, 64, 0.2)",
-                  tension: 0.4,
-                },
-              ],
-            };
-
-            return (
-              <div key={experiment}>
-                <h3>Control Experiment {experiment}</h3>
-                <Line data={data} options={options} />
-              </div>
-            );
-          })}
+          {" "}
+          <h3>Final Conclusion:</h3>
+          <select value={selectedConclusion} onChange={handleConclusionChange}>
+            {suggestedConclusions.map((conclusion, index) => (
+              <option key={index} value={conclusion}>
+                {conclusion}
+              </option>
+            ))}
+          </select>
+          <p>
+            <strong>Conclusion:</strong> {selectedConclusion}
+          </p>
         </div>
-      )}
-      <button onClick={goToConclusion}>Go to Conclusion</button>
+        <div>
+          <h2>Reflection on Your Experiment</h2>
+          <button
+            onClick={() => setShowQuestions(!showQuestions)}
+            className="dropdown-button"
+          >
+            {showQuestions
+              ? "Hide Reflection Questions"
+              : "Show Reflection Questions"}
+          </button>
+          {showQuestions && (
+            <div className="reflection-questions">
+              {reflectionQuestions.map((question, index) => (
+                <div key={index} className="question">
+                  <p>{question}</p>
+                  <div className="options">
+                    <label>
+                      <input
+                        type="radio"
+                        name={`question-${index}`}
+                        value="yes"
+                        checked={answers[index] === "yes"}
+                        onChange={() => handleAnswerChange(index, "yes")}
+                      />
+                      Yes
+                    </label>
+                    <label>
+                      <input
+                        type="radio"
+                        name={`question-${index}`}
+                        value="no"
+                        checked={answers[index] === "no"}
+                        onChange={() => handleAnswerChange(index, "no")}
+                      />
+                      No
+                    </label>
+                    <label>
+                      <input
+                        type="radio"
+                        name={`question-${index}`}
+                        value="idk"
+                        checked={answers[index] === "idk"}
+                        onChange={() => handleAnswerChange(index, "idk")}
+                      />
+                      I don't know
+                    </label>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      <div style={{ textAlign: "center", marginTop: "20px" }}>
+        <button
+          onClick={() => Navigate(-5)}
+          style={{
+            padding: "10px 20px",
+            fontSize: "16px",
+            borderRadius: "4px",
+            backgroundColor: "#007bff",
+            color: "white",
+            border: "none",
+            cursor: "pointer",
+          }}
+        >
+          Return to home page
+        </button>
+      </div>
     </div>
   );
 }
