@@ -577,7 +577,7 @@ const ChickenResults = () => {
                 <button
                   onClick={() => {
                     alert(
-                      "Great Work! \n Congratulations! Your scientific paper has been published successfully! 🎉.\n You will now be brought back to the home page!"
+                      "Great Work! \nCongratulations! Your scientific paper has been published successfully! 🎉.\n You will now be brought back to the home page!"
                     );
                     setShowPublication(false);
                     navigate("/");
