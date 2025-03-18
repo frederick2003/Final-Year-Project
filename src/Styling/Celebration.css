@@ -1,0 +1,100 @@
+.celebration-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.celebration-modal {
+  background-color: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  padding: 30px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+
+.confetti-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.confetti-piece {
+  position: absolute;
+  width: 10px;
+  height: 20px;
+  top: -20px;
+  border-radius: 0 0 5px 5px;
+  animation: confetti-fall 3s linear infinite;
+}
+
+@keyframes confetti-fall {
+  0% {
+    top: -20px;
+    transform: rotateZ(0deg);
+  }
+  100% {
+    top: 100%;
+    transform: rotateZ(360deg);
+  }
+}
+
+.certificate {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border: 4px double #007bff;
+  padding: 20px;
+  margin: 20px 0;
+  position: relative;
+}
+
+.certificate-content {
+  padding: 15px;
+}
+
+.certificate-badge {
+  font-size: 60px;
+  margin: 15px 0;
+}
+
+.stamp {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  font-size: 24px;
+  color: #dc3545;
+  border: 3px solid #dc3545;
+  padding: 5px 10px;
+  transform: rotate(-15deg);
+  opacity: 0.8;
+}
+
+.celebration-button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 25px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 15px;
+}
+
+.celebration-button:hover {
+  background-color: #218838;
+  transform: scale(1.05);
+}

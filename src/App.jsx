@@ -9,6 +9,7 @@ import {
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import "./App.css";
+import { ResultsProvider } from "./ResultsContext.jsx";
 
 import ReturnTreeBackgroundReasearch from "./TreeFolder/TreeBackground.jsx";
 import ReturnTreeVariableIdentification from "./TreeFolder/TreeVariableIdentification.jsx";
@@ -34,7 +35,6 @@ import "./TreeHypothesis.css";
 function Home() {
   return <HomePage />;
 }
-
 
 // Set of functions for Experiment #1: Tree Growth.
 function TreeBackgroundReasearch() {
@@ -89,8 +89,6 @@ function ChickenResultsPage() {
 function ChickenConclusion() {
   return <ChickConclusion />;
 }
-
-
 
 // Set of functions for Experiment #3: Physics experiement.
 function PhysicsBackgroundReasearch() {
@@ -813,47 +811,49 @@ function PhysicsResults() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route
-          path="/TreeBackgroundReasearch"
-          element={<TreeBackgroundReasearch />}
-        />
-        <Route
-          path="/TreeVariableIdentification"
-          element={<TreeVariableIdentification />}
-        />
-        <Route path="/TreeHypothesis" element={<TreeHypothesis />} />
-        <Route path="/TreeExperiment" element={<TreeExperiment />} />
-        <Route path="/TreeResults" element={<ResultsPage />} />
-        <Route path="/TreeConclusion" element={<TreeConclusion />} />
+    <ResultsProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route
+            path="/TreeBackgroundReasearch"
+            element={<TreeBackgroundReasearch />}
+          />
+          <Route
+            path="/TreeVariableIdentification"
+            element={<TreeVariableIdentification />}
+          />
+          <Route path="/TreeHypothesis" element={<TreeHypothesis />} />
+          <Route path="/TreeExperiment" element={<TreeExperiment />} />
+          <Route path="/TreeResults" element={<ResultsPage />} />
+          <Route path="/TreeConclusion" element={<TreeConclusion />} />
 
-        <Route
-          path="/PhysicsBackgroundReasearch"
-          element={<PhysicsBackgroundReasearch />}
-        />
-        <Route
-          path="/PhysicsVariableIdentification"
-          element={<PhysicsVariableIdentification />}
-        />
-        <Route path="/PhysicsHypothesis" element={<PhysicsHypothesis />} />
-        <Route path="/PhysicsExperiment" element={<PhysicsExperiment />} />
-        <Route path="/PhysicsResults" element={<PhysicsResults />} />
-        <Route
-          path="/ChickenBackgroundReasearch"
-          element={<ChickenBackgroundReasearch />}
-        />
-        <Route
-          path="/ChickenVariableIdentification"
-          element={<ChickenVariableIdentification />}
-        />
-        <Route path="/ChickenHypothesis" element={<ChickenHypothesis />} />
-        <Route path="/ChickenExperiment" element={<ChickenExperiment />} />
-        <Route path="/ChickenResultsPage" element={<ChickenResultsPage />} />
-        <Route path="/ChickenConclusion" element={<ChickenConclusion />} />
-      </Routes>
-    </BrowserRouter>
+          <Route
+            path="/PhysicsBackgroundReasearch"
+            element={<PhysicsBackgroundReasearch />}
+          />
+          <Route
+            path="/PhysicsVariableIdentification"
+            element={<PhysicsVariableIdentification />}
+          />
+          <Route path="/PhysicsHypothesis" element={<PhysicsHypothesis />} />
+          <Route path="/PhysicsExperiment" element={<PhysicsExperiment />} />
+          <Route path="/PhysicsResults" element={<PhysicsResults />} />
+          <Route
+            path="/ChickenBackgroundReasearch"
+            element={<ChickenBackgroundReasearch />}
+          />
+          <Route
+            path="/ChickenVariableIdentification"
+            element={<ChickenVariableIdentification />}
+          />
+          <Route path="/ChickenHypothesis" element={<ChickenHypothesis />} />
+          <Route path="/ChickenExperiment" element={<ChickenExperiment />} />
+          <Route path="/ChickenResultsPage" element={<ChickenResultsPage />} />
+          <Route path="/ChickenConclusion" element={<ChickenConclusion />} />
+        </Routes>
+      </BrowserRouter>
+    </ResultsProvider>
   );
 }
 

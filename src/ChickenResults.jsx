@@ -1,9 +1,15 @@
 import React, { useState } from "react";
+import { useResults } from "./ResultsContext";
 import "./ChickResults.css";
 import "./ChickenPublication.css";
 import "./Styling/TableStyle.css";
+import "./Styling/ResultsPopup.css";
+import "./Styling/Celebration.css";
+import "./Styling/HelpContainer.css";
+import ScientistSvg from "./assets/Scientist.svg";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Line, Bar, Pie, Scatter } from "react-chartjs-2";
+import { FaCheckCircle, FaTimesCircle, FaQuestionCircle } from "react-icons/fa";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -30,6 +36,35 @@ ChartJS.register(
   Legend
 );
 
+function HelpSection() {
+  return (
+    <div className="help-container">
+      <div className="help-icon" title="Need help?">
+        ?
+      </div>
+      <div className="help-popup">
+        <div className="help-popup-content">
+          <img
+            src={ScientistSvg}
+            alt="Friendly scientist"
+            className="scientist-image-small"
+          />
+          <h3>Results and Conclusion</h3>
+          <p>
+            <strong>Task:</strong>
+          </p>
+          <p>1) Analyse your results and understand what they mean.</p>
+          <p>2) Form a conclusion from your results.</p>
+          <p>
+            3) Determine whether your results prove or disprove your hypothesis.
+          </p>
+          <p>4) Publish your results for the World to see.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const ChickenResults = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -41,6 +76,57 @@ const ChickenResults = () => {
   const firstValue = location.state?.firstValue || "No value provided.";
   const comparisonValue =
     location.state?.comparisonValue || "No value provided.";
+  const [showIntro, setShowIntro] = useState(true);
+  const [hypothesisResult, setHypothesisResult] = useState("");
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [hypothesisError, setHypothesisError] = useState(false);
+  const { setChickenResults } = useResults();
+
+  const handlePublishClick = () => {
+    if (!hypothesisResult) {
+      setHypothesisError(true);
+      // Scroll to the hypothesis section
+      document.querySelector(".hypothesis-evaluation-section").scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    } else {
+      setHypothesisError(false);
+      setShowPublication(true);
+    }
+  };
+
+  const getNonSelectedVariables = (selectedVars) => {
+    // Make sure selectedVars is an array, even if empty
+    const controlledVars = Array.isArray(selectedVars) ? selectedVars : [];
+
+    console.log("Selected controlled vars:", controlledVars); // Debugging
+
+    const allPossibleVars = [
+      "Breed Of Chickens",
+      "Type Of Music",
+      "Volume Level",
+      "Diet and Nutrition",
+      "Environmental Conditions",
+      "Duration Of Music Exposure",
+      "Stress Levels",
+      "Age Of Chickens",
+      "Presence of Music",
+    ];
+
+    // Filter to find non-selected variables, handle case differences
+    return allPossibleVars.filter(
+      (possibleVar) =>
+        !controlledVars.some(
+          (controlledVar) =>
+            controlledVar.toLowerCase() === possibleVar.toLowerCase()
+        )
+    );
+  };
+
+  const handleIntro = () => {
+    setShowIntro(false);
+  };
   // Calculate totals for the last row
   const totalWithMusic = experimentData.reduce(
     (sum, day) => sum + day.eggsWithMusic,
@@ -145,7 +231,7 @@ const ChickenResults = () => {
     plugins: {
       title: {
         display: true,
-        text: `Average Daily Egg Production Comparison`,
+        text: `Average Eggs Produced Per Day`,
         font: {
           size: 16,
         },
@@ -179,7 +265,7 @@ const ChickenResults = () => {
       " produce almost the same amount of eggs over time than the chickens exposed to " +
       comparisonValue +
       ".",
-    "The results vary randomly, meaning there is no real effect of music on the same amount of eggs produced over time.",
+    "The results vary randomly, meaning there is no real effect of music on the amount of eggs produced over time.",
   ];
 
   const [selectedConclusion, setSelectedConclusion] = useState(
@@ -194,20 +280,25 @@ const ChickenResults = () => {
   };
 
   const handlePublishResults = () => {
-    alert(
-      "Congratulations! Your scientific paper has been published successfully!"
-    );
-    setShowPublication(false);
-    navigate("/ChickenExperiment", {
-      state: {
-        experimentCount: (location.state?.experimentCount || 1) + 1,
-        hypothesis: hypothesis,
-        firstValue: firstValue,
-        comparisonValue: comparisonValue,
-        previousConclusion: selectedConclusion,
-      },
+    setChickenResults({
+      hypothesisResult,
+      selectedConclusion,
+      avgEggsWithMusic,
+      avgEggsWithoutMusic,
+      firstValue,
+      comparisonValue,
+      controlledVariables: location.state?.controlled || [],
+      nonSelectedVariables: getNonSelectedVariables(
+        location.state?.controlled || []
+      ),
+      experimentData,
     });
+
+    // Show celebration and then navigate home
+    setShowCelebration(true);
+    setShowPublication(false);
   };
+
   // Replace placeholders in conclusion text
   const formattedConclusion = selectedConclusion
     .replace("[experiment conditions]", firstValue)
@@ -237,6 +328,40 @@ const ChickenResults = () => {
 
   return (
     <div className="results-container">
+      {/* Introduction modal overlay */}
+      {showIntro && (
+        <div className="intro-modal-overlay">
+          <div className="intro-modal">
+            <div className="scientist-container">
+              <img
+                src={ScientistSvg}
+                alt="Friendly scientist"
+                className="scientist-image"
+              />
+            </div>
+            <h2>Welcome to your Results Page {"  "}</h2>
+            <p>
+              In this section, you will be able to analyze the results of your
+              experiment. Look at your results and try your best to determine if
+              your hypothesis was correct.
+            </p>
+            <p>Reminder your hypothesis is: </p>
+            <ul>
+              <li>
+                <i>{hypothesis}</i>
+              </li>
+            </ul>
+            <p>
+              Review your results, make a valid conclusion, and publish your
+              results for the world to see.
+            </p>
+            <button className="close-intro-button" onClick={handleIntro}>
+              Review Results
+            </button>
+          </div>
+        </div>
+      )}
+      <HelpSection />
       <h1>Experiment Results</h1>
       <p>🔄 Experiment Run: {experimentCount}</p>
 
@@ -336,7 +461,7 @@ const ChickenResults = () => {
               <p>
                 <strong>Your previous conclusion:</strong>
               </p>
-              <div className="conclusion-display">
+              <div className="conclusion-text-box">
                 <p>
                   <strong>{previousConclusion}</strong>
                 </p>
@@ -388,12 +513,67 @@ const ChickenResults = () => {
           </div>
         )}
       </div>
+      {/* Add this hypothesis evaluation section after the conclusion-section div */}
+      <div className="hypothesis-evaluation-section">
+        <h2>Do Your Results Support Your Hypothesis?</h2>
+        <div className="hypothesis-cards-container">
+          <div
+            className={`hypothesis-card ${
+              hypothesisResult === "proved" ? "selected" : ""
+            }`}
+            onClick={() => {
+              setHypothesisResult("proved");
+              setHypothesisError(false);
+            }}
+          >
+            <FaCheckCircle className="result-icon proved" />
+            <h3>Hypothesis Proved</h3>
+            <p>My data supports my hypothesis that:</p>
+            <p className="hypothesis-text">{hypothesis}</p>
+          </div>
+
+          <div
+            className={`hypothesis-card ${
+              hypothesisResult === "disproved" ? "selected" : ""
+            }`}
+            onClick={() => {
+              setHypothesisResult("disproved");
+              setHypothesisError(false);
+            }}
+          >
+            <FaTimesCircle className="result-icon disproved" />
+            <h3>Hypothesis Disproved</h3>
+            <p>My data does not support my hypothesis.</p>
+            <p>This happens in science and helps us learn!</p>
+          </div>
+
+          <div
+            className={`hypothesis-card ${
+              hypothesisResult === "inconclusive" ? "selected" : ""
+            }`}
+            onClick={() => {
+              setHypothesisResult("inconclusive");
+              setHypothesisError(false);
+            }}
+          >
+            <FaQuestionCircle className="result-icon inconclusive" />
+            <h3>Inconclusive</h3>
+            <p>
+              My data is not clear enough to prove or disprove my hypothesis.
+            </p>
+            <p>I would need to do more experiments.</p>
+          </div>
+        </div>
+      </div>
+      {hypothesisError && (
+        <div className="hypothesis-error-message">
+          Please select whether your hypothesis was proved, disproved, or
+          inconclusive before publishing.
+        </div>
+      )}
 
       <div className="buttons-container">
-        <button
-          onClick={() => setShowPublication(true)}
-          className="publish-button"
-        >
+        <button onClick={handlePublishClick} className="publish-button">
           Publish Results
         </button>
       </div>
@@ -467,7 +647,7 @@ const ChickenResults = () => {
                 <h3>Abstract</h3>
                 <p>
                   This study investigates the effect of {firstValue} on egg
-                  production in domestic chickens compared to
+                  production in domestic chickens compared to {"  "}
                   {comparisonValue} conditions. {experimentData.length} days of
                   data were collected to examine the relationship between
                   auditory stimuli and egg-laying behavior. The hypothesis that{" "}
@@ -492,8 +672,7 @@ const ChickenResults = () => {
               <section className="methods">
                 <h3>Methods</h3>
                 <p>
-                  Two groups of laying hens of the same breed, age, and dietary
-                  conditions were observed over a period of
+                  Two groups of laying hens were observed over a period of{" "}
                   {experimentData.length} days. The experimental group was
                   exposed to {firstValue} conditions, while the control group
                   was maintained under {comparisonValue} conditions. Daily egg
@@ -506,19 +685,10 @@ const ChickenResults = () => {
                 <h3>Results</h3>
                 <p>
                   The experimental group exposed to {firstValue} produced an
-                  average of {avgEggsWithMusic.toFixed(2)}
-                  eggs per day (SD = {stdDevWithMusic.toFixed(2)}), while the
-                  control group under {comparisonValue}
-                  conditions produced an average of{" "}
-                  {avgEggsWithoutMusic.toFixed(2)} eggs per day (SD ={" "}
-                  {stdDevWithoutMusic.toFixed(2)}).
-                  {Math.abs(avgEggsWithMusic - avgEggsWithoutMusic) > 1
-                    ? ` This represents a difference of ${Math.abs(
-                        avgEggsWithMusic - avgEggsWithoutMusic
-                      ).toFixed(2)} eggs per day between the two conditions.`
-                    : ` The difference between conditions was minimal at ${Math.abs(
-                        avgEggsWithMusic - avgEggsWithoutMusic
-                      ).toFixed(2)} eggs per day.`}
+                  average of {avgEggsWithMusic.toFixed(2)} eggs per day, while
+                  the control group under {comparisonValue}
+                  {"  "}conditions produced an average of{" "}
+                  {avgEggsWithoutMusic.toFixed(2)} eggs per day.
                 </p>
                 <h2></h2>
                 {showFullData ? (
@@ -549,6 +719,14 @@ const ChickenResults = () => {
                     ? "The magnitude of the observed difference suggests potential practical applications in commercial poultry farming."
                     : "The modest difference observed may not justify implementation in commercial settings without further investigation."}
                 </p>
+                <p>
+                  Based on our experimental results, we
+                  {hypothesisResult === "proved"
+                    ? " were able to support our original hypothesis."
+                    : hypothesisResult === "disproved"
+                    ? " found evidence that contradicted our original hypothesis."
+                    : " found that the evidence was inconclusive regarding our original hypothesis."}
+                </p>
               </section>
 
               <section className="conclusion">
@@ -575,13 +753,7 @@ const ChickenResults = () => {
                   Cancel
                 </button>
                 <button
-                  onClick={() => {
-                    alert(
-                      "Great Work! \nCongratulations! Your scientific paper has been published successfully! 🎉.\n You will now be brought back to the home page!"
-                    );
-                    setShowPublication(false);
-                    navigate("/");
-                  }}
+                  onClick={handlePublishResults}
                   className="accept-button"
                 >
                   Accept & Publish
@@ -603,6 +775,207 @@ const ChickenResults = () => {
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {showPublication && !showFullData && (
+        <div className="intro-modal-overlay">
+          <div className="intro-modal data-viz-modal">
+            <h2>Why We Need a Second Experiment Run</h2>
+
+            <div className="data-comparison">
+              <div className="data-example">
+                <h3>What You See Now: Averages Only</h3>
+                <div className="chart-example">
+                  <Bar
+                    data={averagedChartData}
+                    options={{ ...barChartOptions, maintainAspectRatio: false }}
+                    height={150}
+                  />
+                </div>
+                <p>
+                  This bar chart only shows <strong>average</strong> egg
+                  production and hides important patterns.
+                </p>
+              </div>
+
+              <div className="data-example">
+                <h3>What You'll See After: Complete Data</h3>
+                <div className="chart-example">
+                  <Line
+                    data={{
+                      labels: [
+                        "Day 1",
+                        "Day 2",
+                        "Day 3",
+                        "Day 4",
+                        "Day 5",
+                        "Day 6",
+                        "Day 7",
+                      ],
+                      datasets: [
+                        {
+                          label: firstValue,
+                          data: [10, 12, 15, 14, 16, 15, 17],
+                          borderColor: "rgba(75, 192, 192, 1)",
+                          backgroundColor: "rgba(75, 192, 192, 0.2)",
+                        },
+                        {
+                          label: comparisonValue,
+                          data: [11, 10, 11, 12, 11, 10, 12],
+                          borderColor: "rgba(153, 102, 255, 1)",
+                          backgroundColor: "rgba(153, 102, 255, 0.2)",
+                        },
+                      ],
+                    }}
+                    options={{
+                      ...lineChartOptions,
+                      maintainAspectRatio: false,
+                    }}
+                    height={150}
+                  />
+                </div>
+                <p>
+                  This line chart shows the <strong>full pattern</strong> of egg
+                  production over time.
+                </p>
+              </div>
+            </div>
+
+            <div className="modal-explanation">
+              <h3>Why This Matters in Science</h3>
+              <p>
+                Looking only at averages can hide important trends in your data:
+              </p>
+              <ul>
+                <li>Two different patterns can have the same average</li>
+                <li>You might miss if one condition improves over time</li>
+                <li>
+                  Real scientists always look at complete data before making
+                  conclusions
+                </li>
+              </ul>
+              <p>
+                By running our experiment again, we'll collect more data points
+                to see the full picture!
+              </p>
+              <p>
+                <strong>This is an important scientific skill</strong> - good
+                scientists always look beyond simple averages.
+              </p>
+            </div>
+
+            <div className="publication-buttons modal-buttons">
+              <button
+                onClick={() => setShowPublication(false)}
+                className="cancel-button"
+              >
+                Cancel
+              </button>
+              <button
+                // In ChickenResults.jsx, replace the navigation code in the onClick handler
+                // for the "Rerun Experiment with Full Data" button with this more robust solution:
+
+                onClick={() => {
+                  setShowPublication(false);
+
+                  // Add debugging to see what controlled variables we have
+                  console.log(
+                    "Controlled variables in ChickenResults:",
+                    location.state?.controlled
+                  );
+
+                  // Now build the navigation state with properly structured data
+                  navigate("/ChickenExperiment", {
+                    state: {
+                      experimentCount:
+                        (location.state?.experimentCount || 1) + 1,
+                      hypothesis: hypothesis,
+                      firstValue: firstValue,
+                      comparisonValue: comparisonValue,
+                      previousConclusion: selectedConclusion,
+
+                      // CRITICAL FIX: Pass controlled variables
+                      // Use the controlled variables we received from ChickenSketch
+                      controlled: location.state?.controlled || [],
+
+                      // Also pass independent and dependent for completeness
+                      independent: location.state?.independent || [
+                        "Presence of Music",
+                      ],
+                      dependent: location.state?.dependent || [
+                        "Amount of eggs layed",
+                      ],
+
+                      // Keep the nested experimentData for backward compatibility
+                      experimentData: {
+                        independent: location.state?.independent || [
+                          "Presence of Music",
+                        ],
+                        dependent: location.state?.dependent || [
+                          "Amount of eggs layed",
+                        ],
+                        controlled: location.state?.controlled || [],
+                        hypothesis: hypothesis,
+                        firstValue: firstValue,
+                        comparisonValue: comparisonValue,
+                      },
+                    },
+                  });
+                }}
+                className="accept-button"
+              >
+                Rerun Experiment with Full Data
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showCelebration && (
+        <div className="celebration-overlay">
+          <div className="celebration-modal">
+            <div className="confetti-container">
+              {[...Array(50)].map((_, i) => (
+                <div
+                  key={i}
+                  className="confetti-piece"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    animationDelay: `${Math.random() * 3}s`,
+                    backgroundColor: [
+                      "#FF5252",
+                      "#2196F3",
+                      "#4CAF50",
+                      "#FFC107",
+                      "#9C27B0",
+                    ][Math.floor(Math.random() * 5)],
+                  }}
+                />
+              ))}
+            </div>
+            <div className="certificate">
+              <div className="certificate-content">
+                <h2>CONGRATULATIONS!</h2>
+                <div className="certificate-badge">🏆</div>
+                <h3>Your research has been published!</h3>
+                <p>
+                  Your contributions will now been recognized by the scientific
+                  community.
+                </p>
+                <p>Journal of Bottany Science Education</p>
+                <div className="stamp">PUBLISHED</div>
+              </div>
+            </div>
+            <button
+              className="celebration-button"
+              onClick={() => {
+                setShowCelebration(false);
+                navigate("/");
+              }}
+            >
+              Return to Home
+            </button>
           </div>
         </div>
       )}

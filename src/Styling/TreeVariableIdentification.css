@@ -1,0 +1,320 @@
+/* TreeVariableIdentification.css */
+/* Clean, streamlined design optimized for readability */
+
+.tree-var-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 15px;
+  font-family: "Arial", sans-serif;
+  color: #333;
+}
+
+/* Header styles */
+.tree-var-header {
+  margin-bottom: 15px;
+}
+
+.tree-var-header h2 {
+  font-size: 22px;
+  color: #2c3e50;
+  margin: 0 0 8px 0;
+}
+
+.tree-var-header p {
+  font-size: 14px;
+  margin: 0;
+  color: #666;
+}
+
+/* Main content layout */
+.tree-var-main {
+  display: flex;
+  gap: 20px;
+}
+
+/* Variable selection panel */
+.tree-var-selection {
+  flex: 1;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+}
+
+.tree-var-help {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.tree-var-help-item {
+  flex: 1;
+  background: #fff;
+  padding: 10px;
+  border-radius: 4px;
+  border-left: 3px solid #3498db;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.tree-var-help-item h4 {
+  margin: 0 0 5px 0;
+  font-size: 13px;
+  color: #2980b9;
+}
+
+.tree-var-help-item p {
+  margin: 0;
+  font-size: 12px;
+  color: #555;
+}
+
+.tree-var-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+.tree-var-item {
+  background: #fff;
+  border-radius: 4px;
+  padding: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+.tree-var-item-name {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.tree-var-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.tree-var-btn {
+  padding: 4px 5px;
+  font-size: 11px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.tree-var-btn-indep {
+  background-color: #3498db;
+}
+.tree-var-btn-indep:hover {
+  background-color: #2980b9;
+}
+
+.tree-var-btn-dep {
+  background-color: #e74c3c;
+}
+.tree-var-btn-dep:hover {
+  background-color: #c0392b;
+}
+
+.tree-var-btn-control {
+  background-color: #2ecc71;
+}
+.tree-var-btn-control:hover {
+  background-color: #27ae60;
+}
+
+/* Lists panel */
+.tree-var-lists {
+  width: 300px;
+}
+
+.tree-var-list {
+  background: #f8f9fa;
+  border-radius: 6px;
+  padding: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 10px;
+}
+
+.tree-var-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.tree-var-list h3 {
+  margin: 0;
+  font-size: 14px;
+  color: #2c3e50;
+}
+
+.tree-var-list-indep {
+  border-left: 3px solid #3498db;
+}
+
+.tree-var-list-dep {
+  border-left: 3px solid #e74c3c;
+}
+
+.tree-var-list-control {
+  border-left: 3px solid #2ecc71;
+}
+
+.tree-var-clear {
+  background: none;
+  border: none;
+  color: #777;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 5px;
+}
+.tree-var-clear:hover {
+  color: #e74c3c;
+  text-decoration: underline;
+}
+
+.tree-var-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  min-height: 50px;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.tree-var-item-listed {
+  background: #fff;
+  padding: 5px 8px;
+  margin-bottom: 5px;
+  border-radius: 3px;
+  font-size: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+}
+
+.tree-var-list-indep .tree-var-item-listed {
+  border-left: 2px solid #3498db;
+}
+
+.tree-var-list-dep .tree-var-item-listed {
+  border-left: 2px solid #e74c3c;
+}
+
+.tree-var-list-control .tree-var-item-listed {
+  border-left: 2px solid #2ecc71;
+}
+
+/* Navigation */
+.tree-var-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 15px;
+}
+
+.tree-var-next {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.tree-var-next:hover {
+  background-color: #2980b9;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .tree-var-main {
+    flex-direction: column;
+  }
+
+  .tree-var-lists {
+    width: 100%;
+  }
+}
+
+/* Add these styles to your CSS file */
+.tree-var-error {
+  color: #e53e3e;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.tree-var-list-error {
+  border: 2px solid #e53e3e;
+}
+
+.error-summary {
+  background-color: #fff5f5;
+  border: 1px solid #e53e3e;
+  padding: 12px;
+  margin-bottom: 16px;
+  border-radius: 4px;
+}
+
+.tree-var-remove-btn {
+  background: none;
+  border: none;
+  color: #e53e3e;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: 6px;
+}
+
+.fixed-dependent {
+  font-weight: bold;
+  background-color: #e6fffa;
+}
+.tree-var-error {
+  color: #e53e3e;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.tree-var-list-error {
+  border: 2px solid #e53e3e;
+}
+
+.error-summary {
+  background-color: #fff5f5;
+  border: 1px solid #e53e3e;
+  padding: 12px;
+  margin-bottom: 16px;
+  border-radius: 4px;
+}
+
+.tree-var-remove-btn {
+  background: none;
+  border: none;
+  color: #e53e3e;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: 6px;
+}
+
+.fixed-dependent {
+  font-weight: bold;
+  background-color: #e6fffa;
+}
+
+.fixed-var-note {
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+  color: #2c5282;
+}

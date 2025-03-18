@@ -12,7 +12,7 @@ function MicroworldDescription() {
             type="button"
             data-bs-toggle="collapse"
             data-bs-target="#panelsStayOpen-collapseOne"
-            aria-expanded="true"
+            aria-expanded="false"
             aria-controls="panelsStayOpen-collapseOne"
           >
             <strong>Stage 1: Background Research</strong>
@@ -20,7 +20,7 @@ function MicroworldDescription() {
         </h2>
         <div
           id="panelsStayOpen-collapseOne"
-          className="accordion-collapse collapse show"
+          className="accordion-collapse collapse"
         >
           <div className="accordion-body">
             <strong>
@@ -32,14 +32,9 @@ function MicroworldDescription() {
                 the experiment.
               </li>
               <li>
-                <strong>Record: </strong>Take down information that you think
-                will be important when you are conducting your experiment.
-              </li>
-              <li>
-                <strong>Remember: </strong>Try your best to remember the
-                relevant information to be used in the experiment. Don't worry
-                you will still be able to access this information throughout the
-                experiment process.
+                <strong>Identify: </strong> Use the information given to
+                Identify variables you would like to test during your
+                experiment.
               </li>
             </ul>
           </div>
@@ -63,8 +58,24 @@ function MicroworldDescription() {
           className="accordion-collapse collapse"
         >
           <div className="accordion-body">
-            Add here an easily understandable description of what needs to be
-            carried out in stage 2.
+            <strong>
+              During Stage 2: Variable Identification you are expected to:
+            </strong>
+            <ul>
+              <li>
+                <strong>Identify: </strong>Determine which factors (variables)
+                in your experiment can change or affect the outcome.
+              </li>
+              <li>
+                <strong>Classify: </strong>Distinguish between independent
+                variables (what you change), dependent variables (what you
+                measure), and controlled variables (what you keep the same).
+              </li>
+              <li>
+                <strong>Select: </strong>Choose which variables you will focus
+                on in your experiment.
+              </li>
+            </ul>
           </div>
         </div>
       </div>
@@ -86,8 +97,15 @@ function MicroworldDescription() {
           className="accordion-collapse collapse"
         >
           <div className="accordion-body">
-            Add here an easily understandable description of what needs to be
-            carried out in stage 3.
+            <strong>
+              During Stage 3: Hypothesis Formation you are expected to:
+            </strong>
+            <ul>
+              <li>
+                <strong>Formulate: </strong>Create a testable hypothesis that
+                predicts the relationship between your variables.
+              </li>
+            </ul>
           </div>
         </div>
       </div>
@@ -109,8 +127,19 @@ function MicroworldDescription() {
           className="accordion-collapse collapse"
         >
           <div className="accordion-body">
-            Add here an easily understandable description of what needs to be
-            carried out in stage 4.
+            <strong>
+              During Stage 4: Experimentation you are expected to:
+            </strong>
+            <ul>
+              <li>
+                <strong>Plan: </strong>Design your experiment to test your
+                hypothesis.
+              </li>
+              <li>
+                <strong>Document: </strong>Record all your observations and
+                results.
+              </li>
+            </ul>
           </div>
         </div>
       </div>
@@ -124,7 +153,7 @@ function MicroworldDescription() {
             aria-expanded="false"
             aria-controls="panelsStayOpen-collapseFive"
           >
-            <strong>Stage 5: Results</strong>
+            <strong>Stage 5: Results and Conclusion</strong>
           </button>
         </h2>
         <div
@@ -132,31 +161,25 @@ function MicroworldDescription() {
           className="accordion-collapse collapse"
         >
           <div className="accordion-body">
-            Add here an easily understandable description of what needs to be
-            carried out in stage 5.
-          </div>
-        </div>
-      </div>
-      <div className="accordion-item">
-        <h2 className="accordion-header">
-          <button
-            className="accordion-button collapsed"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#panelsStayOpen-collapseSix"
-            aria-expanded="false"
-            aria-controls="panelsStayOpen-collapseSix"
-          >
-            <strong>Stage 6: Conclusion</strong>
-          </button>
-        </h2>
-        <div
-          id="panelsStayOpen-collapseSix"
-          className="accordion-collapse collapse"
-        >
-          <div className="accordion-body">
-            Add here an easily understandable description of what needs to be
-            carried out in stage 6.
+            <strong>During Stage 5: Results you are expected to:</strong>
+            <ul>
+              <li>
+                <strong>Analyze: </strong>Break down the data and try to
+                understand trends.
+              </li>
+              <li>
+                <strong>Interpret: </strong>Understand your results and compare
+                them to your hypothesis.
+              </li>
+              <li>
+                <strong>Conclude: </strong>Determine what conlcusions can be
+                made based on your results and hypothesis.
+              </li>
+              <li>
+                <strong>Publish: </strong>publish your results in a scientific
+                paper so others can use your work in the future.
+              </li>
+            </ul>
           </div>
         </div>
       </div>

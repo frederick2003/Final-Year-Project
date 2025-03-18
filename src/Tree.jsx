@@ -1,7 +1,21 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import "./Styling/TreeExperiment.css";
 import "./TreeGrowth.css";
 import "./ExperimentButtons.css";
+import {
+  FaTint,
+  FaSun,
+  FaLeaf,
+  FaWind,
+  FaQuestion,
+  FaTree,
+  FaTrophy,
+  FaFlask,
+  FaInfoCircle,
+  FaChartLine,
+  FaArrowAltCircleDown,
+} from "react-icons/fa";
 
 class Tree {
   constructor(initialHeight, initialDiameter, initialAge) {
@@ -25,7 +39,7 @@ class Tree {
       return { impact: 0.6, event: "Drought", fallRisk: 0 }; // No fall risk in drought
     }
     if (rand < 0.08) {
-      return { impact: 0.7, event: "Storm", fallRisk: 0.3 }; // 30% chance of falling
+      return { impact: 0.7, event: "Storm", fallRisk: 0 }; // 30% chance of falling
     }
     if (rand < 0.1) {
       return { impact: 0.5, event: "Disease", fallRisk: 0 }; // No fall risk in disease
@@ -112,64 +126,175 @@ class Tree {
   }
 }
 
-function TreeGrowth({ selectedVariables, setAllResults }) {
+function TreeGrowth({
+  selectedVariables,
+  setExperimentResults,
+  setControlResults,
+  onYearChange,
+  onTreeCountChange,
+  onExperimentStart,
+  onExperimentEvent,
+  onControlEvent,
+}) {
+  // Simulation settings
+  const [simulationSpeed, setSimulationSpeed] = useState(1);
+  const [hasStarted, setHasStarted] = useState(false);
+  const [currentYear, setCurrentYear] = useState(0);
+  const [treesCount, setTreesCount] = useState(1);
+  const [showTips, setShowTips] = useState(false);
+  const [expertTip, setExpertTip] = useState("");
+  const [achievements, setAchievements] = useState([]);
+  // Environmental event state
+  const [experimentEvent, setExperimentEvent] = useState("None");
+  const [controlEvent, setControlEvent] = useState("None");
   const navigate = useNavigate();
+  const [experimentCompleted, setExperimentCompleted] = useState(false);
+  const [validationError, setValidationError] = useState("");
+
+  const LoadingIndicator = ({ isRunning, currentYear }) => {
+    const displayYear = Math.floor(currentYear);
+
+    return (
+      <div className="loading-indicator">
+        <div className="loading-spinner"></div>
+        <div className="year-display">Year: {displayYear} / 10</div>
+      </div>
+    );
+  };
+  const validateSliderValues = () => {
+    let isValid = true;
+    let errorMessages = [];
+
+    // Check each independent variable to ensure values match expected values
+    variables.independent.forEach((variable) => {
+      const mappedVariable = variableMapping[variable] || variable;
+      const config = VARIABLE_CONFIG[mappedVariable];
+
+      if (!config) return;
+
+      // Convert values for comparison (to handle string vs number issues)
+      const expValue = String(experimentSliderValues[mappedVariable]);
+      const controlValue = String(controlSliderValues[mappedVariable]);
+      const firstVal = String(variables.firstValue);
+      const comparisonVal = String(variables.comparisonValue);
+
+      // Check experiment group values against firstValue
+      if (variables.firstValue && expValue !== firstVal) {
+        isValid = false;
+        errorMessages.push(
+          `Error: ${mappedVariable} in Experiment Group 1 should be set to ${variables.firstValue}`
+        );
+      }
+
+      // Check control group values against comparisonValue
+      if (variables.comparisonValue && controlValue !== comparisonVal) {
+        isValid = false;
+        errorMessages.push(
+          `Error: ${mappedVariable} in Experiment Group 2 should be set to ${variables.comparisonValue}`
+        );
+      }
+    });
+
+    return {
+      isValid,
+      errorMessage: errorMessages.length > 0 ? errorMessages.join(". ") : "",
+    };
+  };
+
+  // Current tree state for visualization
+  const [experimentTreeState, setExperimentTreeState] = useState({
+    water: 50,
+    light: 12,
+    temperature: 25,
+    wind: "moderate",
+    event: "None",
+  });
+
+  const [controlTreeState, setControlTreeState] = useState({
+    water: 50,
+    light: 12,
+    temperature: 25,
+    wind: "moderate",
+    event: "None",
+  });
+
+  const animationRef = useRef(null);
 
   const VARIABLE_CONFIG = {
     "Water Availability": {
-      min: 0,
-      max: 100,
-      step: 1,
-      default: 50,
-      unit: "%", // Soil moisture percentage
+      type: "select",
+      options: ["abundant", "moderate", "poor"],
+      default: "moderate",
+      icon: <FaTint />,
+      description:
+        "Water affects the tree's ability to transport nutrients and perform photosynthesis.",
     },
     "Sunlight Exposure": {
       min: 0,
       max: 24,
       step: 1,
       default: 12,
-      unit: "hours", // Standard measure of light intensity
+      unit: "hours",
+      icon: <FaSun />,
+      description:
+        "Sunlight provides energy for photosynthesis, which creates food for the tree.",
     },
     "Soil pH": {
       min: 0,
       max: 14,
       step: 0.5,
-      default: 6.5,
+      default: 7.0,
       unit: "pH",
+      icon: <FaLeaf />,
+      description:
+        "Soil pH affects nutrient availability and the tree's ability to absorb them.",
     },
     Temperature: {
-      min: -20,
-      max: 50,
-      step: 0.5,
-      default: 25,
-      unit: "°C",
+      type: "select",
+      options: ["high", "moderate", "low"],
+      default: "moderate",
+      icon: <FaSun />,
+      description:
+        "Temperature affects the rate of photosynthesis and metabolic processes.",
     },
     "Nutreint Levels": {
-      min: 0,
-      max: 1000,
-      step: 10,
-      default: 500,
-      unit: "ppm", // Parts per million for nutrient concentration
+      type: "select",
+      options: ["high", "moderate", "low"],
+      default: "moderate",
+      icon: <FaLeaf />,
+      description:
+        "Nutrients are essential minerals that trees need for growth and development.",
     },
     "Time of Day Watering Occurs": {
       type: "select",
-      options: ["Morning", "Afternoon", "Evening"],
-      default: "Morning",
+      options: ["morning", "afternoon", "evening"],
+      default: "morning",
+      icon: <FaTint />,
+      description:
+        "The time of day affects water evaporation rates and absorption efficiency.",
     },
     "Orientation of tree": {
       type: "select",
-      options: ["North", "South", "East", "West"],
-      default: "North",
+      options: ["north", "south", "east", "west"],
+      default: "north",
+      icon: <FaQuestion />,
+      description: "Orientation affects sunlight exposure and wind conditions.",
     },
     "Wind Exposure": {
       type: "select",
       options: ["high", "moderate", "low"],
-      default: "high",
+      default: "moderate",
+      icon: <FaWind />,
+      description:
+        "Wind can affect water loss and physical stress on the tree.",
     },
     "Closeness to Roads or noisey areas": {
       type: "select",
       options: ["high", "moderate", "low"],
-      default: "high",
+      default: "low",
+      icon: <FaQuestion />,
+      description:
+        "Proximity to roads can expose trees to pollution and soil compaction.",
     },
   };
 
@@ -182,6 +307,15 @@ function TreeGrowth({ selectedVariables, setAllResults }) {
   };
 
   const variableMapping = {
+    "Soil pH": "Soil pH",
+    "Water Availability": "Water Availability",
+    "Sunlight Exposure": "Sunlight Exposure",
+    Temperature: "Temperature",
+    "Nutrient Levels": "Nutreint Levels", // Note the typo in the original code
+    "Wind Exposure": "Wind Exposure",
+    "Closeness to Roads or noisey areas": "Closeness to Roads or noisey areas",
+
+    // Add reverse mappings for the keys coming from selectedVariables
     soilPh: "Soil pH",
     water: "Water Availability",
     light: "Sunlight Exposure",
@@ -191,198 +325,488 @@ function TreeGrowth({ selectedVariables, setAllResults }) {
     closeness: "Closeness to Roads or noisey areas",
   };
 
-  const initializeSliders = () => {
+  // Interesting facts about trees to display
+  const treeFacts = [
+    "Trees communicate with each other through an underground network of fungi called the 'Wood Wide Web'.",
+    "The oldest tree in the world is over 5,000 years old!",
+    "A single large tree can provide a day's supply of oxygen for up to four people.",
+    "Trees can detect when deer are eating them and change their leaf chemistry to taste bad.",
+    "Some trees release chemicals when being eaten that signal to other trees to start producing defensive chemicals.",
+    "Tree rings grow faster in warm, wet years and slower in cold, dry years.",
+    "Trees can lower air temperature by up to 10°F by shading and releasing water vapor.",
+    "One acre of trees absorbs the carbon dioxide equivalent to driving your car 26,000 miles.",
+    "Trees can help reduce stress and improve mental health just by being around them!",
+    "Some trees can 'walk' up to 20cm per year by growing new roots in the direction they want to move.",
+  ];
+
+  const initializeSliders = (isExperiment) => {
     const sliders = {};
 
     [...variables.independent, ...variables.controlled].forEach((variable) => {
-      const mappedVariable = variableMapping[variable] || variable; // Convert display name to internal key
+      // Get the display name for this variable
+      const mappedVariable = variableMapping[variable] || variable;
       const config = VARIABLE_CONFIG[mappedVariable];
 
       if (config) {
-        // ✅ If the variable is a dropdown (select), set default string value
-        if (config.type === "select") {
+        // If it's an independent variable for experiment, use the firstValue
+        if (variables.independent.includes(variable) && isExperiment) {
+          // Here we just use the default value as a placeholder
           sliders[mappedVariable] = config.default;
         }
-        // ✅ If it's a numerical slider, set default numerical value
+        // If it's an independent variable for control, use the comparisonValue
+        else if (variables.independent.includes(variable) && !isExperiment) {
+          // For select types, pick a different option than the default
+          if (config.type === "select") {
+            const options = config.options;
+            const defaultIndex = options.indexOf(config.default);
+            // Pick a different option (next in list or first if default is last)
+            const alternativeIndex = (defaultIndex + 1) % options.length;
+            sliders[mappedVariable] = options[alternativeIndex];
+          } else {
+            // For numeric sliders, use 70% of default as before
+            sliders[mappedVariable] = config.default;
+          }
+        }
+        // For controlled variables, use the same value for both
         else {
           sliders[mappedVariable] = config.default;
         }
       } else {
-        console.warn(`⚠️ Variable "${variable}" not found in VARIABLE_CONFIG`);
+        console.warn(
+          `⚠️ Variable "${variable}" not found in VARIABLE_CONFIG. Mapped to: ${mappedVariable}`
+        );
         sliders[mappedVariable] = 0;
       }
     });
 
-    console.log("✅ Final Slider Values:", sliders);
+    console.log(
+      `✅ Final ${isExperiment ? "Experiment" : "Control"} Slider Values:`,
+      sliders
+    );
     return sliders;
   };
 
-  const [sliderValues, setSliderValues] = useState(() => initializeSliders());
-  const [results, setResults] = useState([]);
-  const [experimentCount, setExperimentCount] = useState(1);
-  const [isControl, setIsControl] = useState(false); // To indicate whether this is a control experiment
+  const [experimentSliderValues, setExperimentSliderValues] = useState(() =>
+    initializeSliders(true)
+  );
+  const [controlSliderValues, setControlSliderValues] = useState(() =>
+    initializeSliders(false)
+  );
 
-  const handleSliderChange2 = (variable, value) => {
-    setSliderValues((prev) => ({
-      ...prev,
-      [variable]: parseFloat(value),
-    }));
-  };
+  useEffect(() => {
+    setExperimentTreeState({
+      water: experimentSliderValues["Water Availability"] || "moderate",
+      light: experimentSliderValues["Sunlight Exposure"] || 12,
+      temperature: experimentSliderValues["Temperature"] || "moderate",
+      wind: experimentSliderValues["Wind Exposure"] || "moderate",
+      event: experimentEvent,
+    });
+
+    setControlTreeState({
+      water: controlSliderValues["Water Availability"] || "moderate",
+      light: controlSliderValues["Sunlight Exposure"] || 12,
+      temperature: controlSliderValues["Temperature"] || "moderate",
+      wind: controlSliderValues["Wind Exposure"] || "moderate",
+      event: controlEvent,
+    });
+  }, [
+    experimentSliderValues,
+    controlSliderValues,
+    experimentEvent,
+    controlEvent,
+  ]);
+  const [experimentCount, setExperimentCount] = useState(1);
+  const [isRunning, setIsRunning] = useState(false);
+  const [eventMessages, setEventMessages] = useState([]);
+
+  // Show random tree fact when component mounts
+  useEffect(() => {
+    const randomFact = treeFacts[Math.floor(Math.random() * treeFacts.length)];
+    setExpertTip(randomFact);
+  }, []);
 
   const handleExperimentCountChange = (e) => {
     setExperimentCount(parseInt(e.target.value, 10) || 1);
   };
 
-  const [isRunning, setIsRunning] = useState(false);
-  const [eventMessages, setEventMessages] = useState([]);
-  const isRunningRef = useRef(false);
+  const handleTreeCountChange = (e) => {
+    setTreesCount(parseInt(e.target.value, 10) || 1);
+  };
 
-  const runSimulation = useCallback(async () => {
-    if (isRunningRef.current) {
-      return;
-    }
-    isRunningRef.current = true;
-    setIsRunning(true);
-    setEventMessages([]);
+  const handleSimulationSpeedChange = (e) => {
+    setSimulationSpeed(parseInt(e.target.value, 10) || 1);
+  };
 
-    try {
-      const timeSteps = 10;
-      const initialHeight = 1.0; // meters
-      const initialDiameter = 5.0; // cm
-      const initialAge = 5;
-      let competitionFactor = 0.8; // Base competition factor
+  // Show a different tip when button is clicked
+  const handleNewTip = () => {
+    const currentTip = expertTip;
+    let newTip;
+    do {
+      newTip = treeFacts[Math.floor(Math.random() * treeFacts.length)];
+    } while (newTip === currentTip);
+    setExpertTip(newTip);
+  };
 
-      // Function to add small variation (±5%)
-      const addVariation = (value, percentage = 0.05) => {
-        const variation = value * (Math.random() * percentage * 2 - percentage);
-        return value + variation;
-      };
-
-      // Use user-selected values or default to optimal levels (with variation)
-      const water = addVariation(
-        sliderValues["Water Availability"] !== undefined
-          ? sliderValues["Water Availability"] / 100
-          : 0.7
-      );
-
-      const light = addVariation(
-        sliderValues["Sunlight Exposure"] !== undefined
-          ? sliderValues["Sunlight Exposure"] / 24
-          : 0.8
-      );
-
-      const soilPh = addVariation(
-        sliderValues["Soil pH"] !== undefined ? sliderValues["Soil pH"] : 6.5,
-        0.02 // Smaller variation for pH
-      );
-
-      const temperature = addVariation(
-        sliderValues["Temperature"] !== undefined
-          ? sliderValues["Temperature"]
-          : 25
-      );
-
-      const nutrients = addVariation(
-        sliderValues["Nutreint Levels"] !== undefined
-          ? sliderValues["Nutreint Levels"] / 1000
-          : 0.8
-      );
-
-      // Handle categorical variables (unchanged, as they are discrete values)
-      const windExposureMultiplier = {
-        high: 0.7,
-        moderate: 0.9,
-        low: 1.0,
-      }[sliderValues["Wind Exposure"] || "low"];
-
-      const roadProximityMultiplier = {
-        high: 0.8,
-        moderate: 0.9,
-        low: 1.0,
-      }[sliderValues["Closeness to Roads or noisey areas"] || "low"];
-
-      const wateringTimeMultiplier = {
-        Morning: 1.0,
-        Afternoon: 0.9,
-        Evening: 0.8,
-      }[sliderValues["Time of Day Watering Occurs"] || "Morning"];
-
-      const orientationMultiplier = {
-        North: 1.0,
-        South: 0.95,
-        East: 0.9,
-        West: 0.85,
-      }[sliderValues["Orientation of tree"] || "North"];
-
-      // Final environmental factor with added variation
-      const environmentalFactor =
-        water *
-        light *
-        (1 - Math.abs(soilPh - 6.5) / 3.0) *
-        Math.max(0.5, 1 - Math.abs(temperature - 25) / 50) *
-        nutrients *
-        windExposureMultiplier *
-        roadProximityMultiplier *
-        wateringTimeMultiplier *
-        orientationMultiplier;
-
-      const allResults = [];
-      const newEventMessages = [];
-
-      for (let exp = 1; exp <= experimentCount; exp++) {
-        const tree = new Tree(initialHeight, initialDiameter, initialAge);
-        const newResults = [];
-
-        for (let year = 1; year <= timeSteps; year++) {
-          // Apply calculated environmental factor and run growth (with small variation)
-          const eventMessage = tree.grow(
-            competitionFactor * addVariation(environmentalFactor, 0.05)
-          );
-
-          const resultData = {
-            experiment: exp,
-            year: year,
-            height: tree.height.toFixed(2),
-            diameter: tree.diameter.toFixed(2),
-            age: tree.age,
-            event:
-              eventMessage.includes("🌪️") ||
-              eventMessage.includes("⚠️") ||
-              eventMessage.includes("🌍")
-                ? eventMessage // Store event message if it contains an extreme event
-                : "No major event",
-          };
-          newResults.push(resultData);
-        }
-
-        allResults.push(...newResults);
+  // Animation frame for simulation
+  const animateSimulation = useCallback(() => {
+    setCurrentYear((prev) => {
+      const newYear = prev + 0.05 * simulationSpeed;
+      if (newYear >= 10) {
+        return 10;
       }
 
-      setAllResults((prevResults) => [...prevResults, ...allResults]);
-    } catch (error) {
-      console.error("simulation error");
-    } finally {
-      setIsRunning(false);
-    }
-  }, [experimentCount, setAllResults]);
+      // Random chance to generate an extreme event
+      if (Math.random() < 0.01 * simulationSpeed) {
+        const events = ["Drought", "Storm", "Disease", "None"];
+        const randomEvent = events[Math.floor(Math.random() * 3)]; // Bias toward extreme events
+        setExperimentEvent(randomEvent);
 
-  const renderSlider = (variable) => {
-    const config = VARIABLE_CONFIG[variable];
+        if (achievements.indexOf(`Experienced ${randomEvent}`) === -1) {
+          setAchievements((prev) => [...prev, `Experienced ${randomEvent}`]);
+        }
+      }
+
+      if (Math.random() < 0.01 * simulationSpeed) {
+        const events = ["Drought", "Storm", "Disease", "None"];
+        const randomEvent = events[Math.floor(Math.random() * 3)];
+        setControlEvent(randomEvent);
+      }
+
+      if (
+        Math.floor(newYear) > Math.floor(prev) &&
+        Math.floor(newYear) % 2 === 0
+      ) {
+        // Add achievement for reaching a new year
+        if (
+          achievements.indexOf(`Year ${Math.floor(newYear)} Completed`) === -1
+        ) {
+          setAchievements((prev) => [
+            ...prev,
+            `Year ${Math.floor(newYear)} Completed`,
+          ]);
+        }
+      }
+
+      return newYear;
+    });
+
+    if (isRunningRef.current) {
+      animationRef.current = requestAnimationFrame(animateSimulation);
+    }
+  }, [simulationSpeed, achievements]);
+
+  const isRunningRef = useRef(false);
+
+  // Modify the runSimulationBatch function to handle the categorical values correctly
+  const runSimulationBatch = (sliderValues, count, type) => {
+    const results = [];
+    const timeSteps = 10;
+    const initialHeight = 1.0; // meters
+    const initialDiameter = 5.0; // cm
+    const initialAge = 5;
+    let competitionFactor = 0.8; // Base competition factor
+
+    // Function to add small variation (±5%)
+    const addVariation = (value, percentage = 0.05) => {
+      const variation = value * (Math.random() * percentage * 2 - percentage);
+      return value + variation;
+    };
+
+    // Convert categorical values to numerical equivalents for calculation
+    const waterValues = {
+      abundant: 0.9,
+      moderate: 0.7,
+      poor: 0.4,
+    };
+
+    const temperatureValues = {
+      high: 0.7, // High temps aren't optimal
+      moderate: 0.9, // Moderate is good
+      low: 0.5, // Low temps slow growth
+    };
+
+    const nutrientValues = {
+      high: 0.9,
+      moderate: 0.7,
+      low: 0.4,
+    };
+
+    // Use user-selected values or default to optimal levels (with variation)
+    const water = addVariation(
+      sliderValues["Water Availability"] !== undefined
+        ? waterValues[sliderValues["Water Availability"]]
+        : 0.7
+    );
+
+    const light = addVariation(
+      sliderValues["Sunlight Exposure"] !== undefined
+        ? sliderValues["Sunlight Exposure"] / 24
+        : 0.8
+    );
+
+    const soilPh = addVariation(
+      sliderValues["Soil pH"] !== undefined ? sliderValues["Soil pH"] : 6.5,
+      0.02 // Smaller variation for pH
+    );
+
+    const temperature = addVariation(
+      sliderValues["Temperature"] !== undefined
+        ? temperatureValues[sliderValues["Temperature"]]
+        : 0.8
+    );
+
+    const nutrients = addVariation(
+      sliderValues["Nutreint Levels"] !== undefined
+        ? nutrientValues[sliderValues["Nutreint Levels"]]
+        : 0.7
+    );
+
+    // Handle categorical variables (unchanged, as they are discrete values)
+    const windExposureMultiplier = {
+      high: 0.7,
+      moderate: 0.9,
+      low: 1.0,
+    }[sliderValues["Wind Exposure"] || "low"];
+
+    const roadProximityMultiplier = {
+      high: 0.8,
+      moderate: 0.9,
+      low: 1.0,
+    }[sliderValues["Closeness to Roads or noisey areas"] || "low"];
+
+    const wateringTimeMultiplier = {
+      morning: 1.0,
+      afternoon: 0.9,
+      evening: 0.8,
+    }[sliderValues["Time of Day Watering Occurs"] || "morning"];
+
+    const orientationMultiplier = {
+      north: 1.0,
+      south: 0.95,
+      east: 0.9,
+      west: 0.85,
+    }[sliderValues["Orientation of tree"] || "north"];
+
+    // Final environmental factor with added variation
+    const environmentalFactor =
+      water *
+      light *
+      (1 - Math.abs(soilPh - 6.5) / 3.0) *
+      temperature * // Using the temperature value directly now
+      nutrients *
+      windExposureMultiplier *
+      roadProximityMultiplier *
+      wateringTimeMultiplier *
+      orientationMultiplier;
+
+    for (let exp = 1; exp <= count; exp++) {
+      const tree = new Tree(initialHeight, initialDiameter, initialAge);
+
+      for (let year = 1; year <= timeSteps; year++) {
+        // Apply calculated environmental factor and run growth (with small variation)
+        const eventMessage = tree.grow(
+          competitionFactor * addVariation(environmentalFactor, 0.05)
+        );
+
+        const resultData = {
+          experiment: exp,
+          year: year,
+          height: tree.height.toFixed(2),
+          diameter: tree.diameter.toFixed(2),
+          age: tree.age,
+          event:
+            eventMessage.includes("🌪️") ||
+            eventMessage.includes("⚠️") ||
+            eventMessage.includes("🌍")
+              ? eventMessage
+              : "No major event",
+        };
+        results.push(resultData);
+      }
+    }
+
+    setExperimentCompleted(true);
+    return results;
+  };
+
+  // Start the visual simulation and calculate results
+  // In Tree.jsx, replace the runSimulation function with this improved version:
+
+  const runSimulation = useCallback(() => {
+    const { isValid, errorMessage } = validateSliderValues();
+
+    if (!isValid) {
+      setValidationError(errorMessage);
+      return; // Prevent simulation from running
+    }
+
+    // Clear any previous errors
+    setValidationError("");
+    setHasStarted(true);
+    setIsRunning(true);
+    isRunningRef.current = true;
+
+    // Notify parent component
+    if (onExperimentStart) onExperimentStart(true);
+
+    // Reset simulation state
+    setCurrentYear(0);
+    setExperimentEvent("None");
+    setControlEvent("None");
+
+    // If this is the first run, add an achievement
+    if (achievements.length === 0) {
+      setAchievements(["First Experiment Started"]);
+    }
+
+    // Start animation
+    animationRef.current = requestAnimationFrame(animateSimulation);
+
+    // Use a Promise to ensure results are calculated and state is updated
+    const generateResults = () => {
+      return new Promise((resolve) => {
+        try {
+          console.log("Generating experiment results...");
+          const experimentResults = runSimulationBatch(
+            experimentSliderValues,
+            experimentCount,
+            "experiment"
+          );
+
+          console.log("Generating control results...");
+          const controlResults = runSimulationBatch(
+            controlSliderValues,
+            experimentCount,
+            "control"
+          );
+
+          console.log("Simulation complete:", {
+            experimentResults: experimentResults.length,
+            controlResults: controlResults.length,
+          });
+
+          resolve({ experimentResults, controlResults });
+        } catch (error) {
+          console.error("Simulation error:", error);
+          resolve({ experimentResults: [], controlResults: [] });
+        }
+      });
+    };
+
+    // Wait for animation to complete before generating results
+    const animationTime = 10000 / simulationSpeed;
+    console.log(
+      `Animation will run for ${animationTime}ms at speed ${simulationSpeed}`
+    );
+
+    setTimeout(async () => {
+      const { experimentResults, controlResults } = await generateResults();
+
+      // Update state with results
+      setExperimentResults(experimentResults);
+      setControlResults(controlResults);
+
+      setIsRunning(false);
+      isRunningRef.current = false;
+      setExperimentCompleted(true);
+
+      // Add achievement for completing experiment
+      setAchievements((prev) => [...prev, "Experiment Completed"]);
+
+      // Log that results are ready for navigation
+      console.log("Results ready for navigation:", {
+        experimentData: experimentResults.length > 0 ? "Available" : "Empty",
+        controlData: controlResults.length > 0 ? "Available" : "Empty",
+      });
+    }, animationTime);
+  }, [
+    experimentSliderValues,
+    controlSliderValues,
+    variables,
+    experimentCount,
+    experimentSliderValues,
+    controlSliderValues,
+    setExperimentResults,
+    setControlResults,
+    animateSimulation,
+    simulationSpeed,
+    achievements,
+    onExperimentStart,
+  ]);
+
+  // Add this useEffect to communicate state changes to parent
+  useEffect(() => {
+    if (onYearChange) onYearChange(currentYear);
+    if (onTreeCountChange) onTreeCountChange(treesCount);
+    if (onExperimentEvent) onExperimentEvent(experimentEvent);
+    if (onControlEvent) onControlEvent(controlEvent);
+  }, [
+    currentYear,
+    treesCount,
+    experimentEvent,
+    controlEvent,
+    onYearChange,
+    onTreeCountChange,
+    onExperimentEvent,
+    onControlEvent,
+  ]);
+
+  // Clean up animation frame on unmount
+  useEffect(() => {
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, []);
+
+  // Render a slider with icon and tooltip
+  // Improved slider rendering function
+  // In Tree.jsx, update the renderSlider function to include a help popup
+
+  // Improved slider rendering function with help popup
+  const renderSlider = (variable, sliderValues, handleChangeFunction) => {
+    // Find the display name for internal variables (like 'water' → 'Water Availability')
+    let displayVariable = variable;
+    const mappedVariable = variableMapping[variable] || variable;
+
+    // Check if we need to use the mapped variable to find config
+    const config = VARIABLE_CONFIG[mappedVariable];
 
     if (!config) {
       console.warn(`⚠️ Variable "${variable}" not found in VARIABLE_CONFIG`);
       return null;
     }
 
-    if (config.type === "select") {
-      // ✅ Use a dropdown for categorical variables
-      return (
-        <div key={variable} className="input-group">
-          <label htmlFor={variable}>{variable}</label>
+    // Log slider state for debugging
+    console.log(`Rendering slider for ${variable}:`, {
+      displayName: mappedVariable,
+      currentValue: sliderValues[mappedVariable] ?? config.default,
+      config: config,
+    });
+
+    return (
+      <div key={variable} className="input-group">
+        <div className="slider-header">
+          <span className="variable-icon">{config.icon}</span>
+          <label htmlFor={variable}>{mappedVariable}</label>
+          <div className="help-popup-container">
+            <span className="help-icon">?</span>
+            <div className="help-popup">
+              <p>{config.description}</p>
+            </div>
+          </div>
+        </div>
+
+        {config.type === "select" ? (
           <select
             id={variable}
-            value={sliderValues[variable] ?? config.default}
-            onChange={(e) => handleSliderChange2(variable, e.target.value)}
+            value={sliderValues[mappedVariable] ?? config.default}
+            onChange={(e) =>
+              handleChangeFunction(mappedVariable, e.target.value)
+            }
+            className="fancy-select"
+            disable={isRunning || experimentCompleted}
           >
             {config.options.map((option) => (
               <option key={option} value={option}>
@@ -390,95 +814,223 @@ function TreeGrowth({ selectedVariables, setAllResults }) {
               </option>
             ))}
           </select>
-        </div>
-      );
-    }
-
-    // ✅ Use a slider for numerical variables
-    return (
-      <div key={variable} className="input-group">
-        <label htmlFor={variable}>{variable}</label>
-        <input
-          type="range"
-          id={variable}
-          min={config.min}
-          max={config.max}
-          step={config.step}
-          value={sliderValues[variable] ?? config.default}
-          onChange={(e) => handleSliderChange2(variable, e.target.value)}
-        />
-        <span>
-          {sliderValues[variable] ?? config.default} {config.unit || ""}
-        </span>
+        ) : (
+          <div className="slider-container">
+            <input
+              type="range"
+              id={variable}
+              min={config.min}
+              max={config.max}
+              step={config.step}
+              value={sliderValues[mappedVariable] ?? config.default}
+              onChange={(e) =>
+                handleChangeFunction(mappedVariable, e.target.value)
+              }
+              className="fancy-slider"
+              disabled={isRunning || experimentCompleted}
+            />
+            <span className="slider-value">
+              {sliderValues[mappedVariable] ?? config.default}{" "}
+              {config.unit || ""}
+            </span>
+          </div>
+        )}
       </div>
     );
   };
 
+  const renderControlVariable = (variable, sliderValues) => {
+    // Find the display name for internal variables (like 'water' → 'Water Availability')
+    let displayVariable = variable;
+    const mappedVariable = variableMapping[variable] || variable;
+
+    // Check if we need to use the mapped variable to find config
+    const config = VARIABLE_CONFIG[mappedVariable];
+
+    if (!config) {
+      console.warn(`⚠️ Variable "${variable}" not found in VARIABLE_CONFIG`);
+      return null;
+    }
+
+    // Log slider state for debugging
+    console.log(`Rendering slider for ${variable}:`, {
+      displayName: mappedVariable,
+      currentValue: sliderValues[mappedVariable] ?? config.default,
+      config: config,
+    });
+
+    return (
+      <div key={variable} className="input-group">
+        <div className="slider-header">
+          <span className="variable-icon">{config.icon}</span>
+          <label htmlFor={variable}>{mappedVariable}</label>
+          <div className="help-popup-container">
+            <span className="help-icon">?</span>
+            <div className="help-popup">
+              <p>{config.description}</p>
+            </div>
+          </div>
+        </div>
+        <p>
+          {variable} was selected as a controlled variable. Its level will
+          remain the same for each experiment.
+        </p>
+      </div>
+    );
+  };
+
+  // Updated handlers for slider changes
+  const handleExperimentSliderChange = (variable, value) => {
+    console.log(`Experiment slider change: ${variable} → ${value}`);
+    setExperimentSliderValues((prev) => ({
+      ...prev,
+      [variable]:
+        typeof value === "string" && !isNaN(parseFloat(value))
+          ? parseFloat(value)
+          : value,
+    }));
+  };
+
+  const handleControlSliderChange = (variable, value) => {
+    console.log(`Control slider change: ${variable} → ${value}`);
+    setControlSliderValues((prev) => ({
+      ...prev,
+      [variable]:
+        typeof value === "string" && !isNaN(parseFloat(value))
+          ? parseFloat(value)
+          : value,
+    }));
+  };
+
   return (
-    <div className="container">
-      <h1>Tree Growth Model</h1>
-      <label htmlFor="experimentCount">Number of Experiment Runs:</label>
-      <input
-        type="number"
-        id="experimentCount"
-        value={experimentCount}
-        min="1"
-        onChange={handleExperimentCountChange}
-      />
+    <div className="tree-growth-container">
+      <div className="simulation-controls">
+        <div className="control-panel">
+          <div className="control-group">
+            <h1>
+              <FaFlask /> Experiment Setup
+            </h1>
+            <label htmlFor="treeCount">
+              <FaTree /> Select the number of trees you would like to monitor
+              during your experiment:
+            </label>
+            <input
+              type="range"
+              id="treeCount"
+              min="1"
+              max="9"
+              value={treesCount}
+              onChange={handleTreeCountChange}
+              className="fancy-slider"
+              disabled={isRunning || experimentCompleted}
+            />
+            <span className="slider-value">{treesCount}</span>
+          </div>
 
-      <div className="input-group">
-        <label htmlFor="isControl">Run as Control Experiment:</label>
-        <input
-          type="checkbox"
-          id="isControl"
-          checked={isControl}
-          onChange={(e) => setIsControl(e.target.checked)}
-        />
+          <div className="control-group">
+            <label htmlFor="experimentCount">
+              <FaSun /> Select how many groups of {treesCount} trees you wish to
+              simulate:
+            </label>
+            <input
+              type="range"
+              id="experimentCount"
+              min="1"
+              max="5"
+              value={experimentCount}
+              onChange={handleExperimentCountChange}
+              className="fancy-slider"
+              disabled={isRunning || experimentCompleted}
+            />
+            <span className="slider-value">{experimentCount}</span>
+          </div>
+        </div>
       </div>
 
-      <div className="input-container">
-        <h3>Independent Variables</h3>
-        {variables.independent.map((variable) => renderSlider(variable))}
+      <div className="split-controls">
+        <div className="experiment-side">
+          <div className="experiment-header">
+            <h3 className="panel-title">
+              Experiment control panel:
+              <span className="variable-value">
+                {selectedVariables.firstValueLabel || "Experiment"}{" "}
+                <FaArrowAltCircleDown />
+              </span>
+            </h3>
+          </div>
+          <div className="variables-container">
+            <h4>Independent Variable</h4>
+            {selectedVariables.independent.map((variable) =>
+              renderSlider(
+                variable,
+                experimentSliderValues,
+                handleExperimentSliderChange
+              )
+            )}
 
-        <h3>Controlled Variables</h3>
-        {variables.controlled.map((variable) => renderSlider(variable))}
+            <h4>Controlled Variables</h4>
+            {selectedVariables.controlled.map((variable) =>
+              renderControlVariable(variable, experimentSliderValues)
+            )}
+          </div>
+        </div>
+
+        {/* Control Side */}
+        <div className="control-side">
+          <div className="experiment-header">
+            <h3 className="panel-title">
+              Comparison control panel:
+              <span className="variable-value">
+                {selectedVariables.comparisonValueLabel || "Control"}{" "}
+                <FaArrowAltCircleDown />
+              </span>
+            </h3>
+          </div>
+          <div className="variables-container">
+            <h4>Independent Variable</h4>
+            {selectedVariables.independent.map((variable) =>
+              renderSlider(
+                variable,
+                controlSliderValues,
+                handleControlSliderChange
+              )
+            )}
+
+            <h4>Controlled Variables</h4>
+            {selectedVariables.controlled.map((variable) =>
+              renderControlVariable(variable, controlSliderValues)
+            )}
+          </div>
+        </div>
       </div>
-
-      <button
-        onClick={runSimulation}
-        disabled={isRunning}
-        className={isRunning ? "button-disabled" : "button-active"}
-      >
-        {isRunning ? "Running..." : "Run Growth Simulation"}
-      </button>
-      {results.length > 0 && (
-        <div className="results-table">
-          <table>
-            <thead>
-              <tr>
-                <th>Experiment</th>
-                <th>Year</th>
-                <th>Height (m)</th>
-                <th>Diameter (cm)</th>
-                <th>Age (years)</th>
-                <th>Event</th>
-              </tr>
-            </thead>
-            <tbody>
-              {results.map((result, index) => (
-                <tr key={index}>
-                  <td>{result.experiment}</td>
-                  <td>{result.year}</td>
-                  <td>{result.height}</td>
-                  <td>{result.diameter}</td>
-                  <td>{result.age}</td>
-                  <td>{result.event}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {validationError && (
+        <div className="validation-error">
+          <p>{validationError}</p>
         </div>
       )}
+
+      <div className="run-button-container">
+        {isRunning && (
+          <LoadingIndicator isRunning={isRunning} currentYear={currentYear} />
+        )}
+        <button
+          onClick={runSimulation}
+          disabled={isRunning || experimentCompleted}
+          className={
+            isRunning
+              ? "button-disabled pulse-animation"
+              : experimentCompleted
+              ? "button-disabled"
+              : "button-active"
+          }
+        >
+          {isRunning
+            ? "Growing Trees... 🌱"
+            : experimentCompleted
+            ? "Experiment Completed ✓"
+            : "Start Growth Simulation 🌳"}
+        </button>
+      </div>
     </div>
   );
 }

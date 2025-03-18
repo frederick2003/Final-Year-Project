@@ -157,3 +157,21 @@
     margin: 5px 0;
   }
 }
+.input-error {
+  border: 2px solid #ff3860 !important;
+}
+
+.error-message {
+  color: #ff3860;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+.error-summary {
+  background-color: #fff5f7;
+  border: 1px solid #ff3860;
+  border-radius: 4px;
+  color: #ff3860;
+  margin-bottom: 1rem;
+  padding: 1rem;
+}
