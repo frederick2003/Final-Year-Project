@@ -320,7 +320,7 @@ const ChickenResults = () => {
       dependent: location.state?.dependent || ["Number of Eggs Produced"],
 
       // Save other experiment data
-      experimentData,
+      experimentData: experimentData,
     });
 
     // Show celebration and then navigate home

@@ -3,9 +3,12 @@ import { useNavigate } from "react-router-dom";
 import "./HomepageStyle.css";
 import MicroworldDescription from "./Description.jsx";
 import { useResults } from "../ResultsContext";
+import { Line, Bar } from "react-chartjs-2";
+import { useState } from "react";
 
 function HomePage() {
   const Navigate = useNavigate();
+  const [showAverageGraph, setShowAverageGraph] = useState(true);
 
   // New navigation functions for the predefined experiments
   const goToMusicVsNoMusic = () => {
@@ -180,6 +183,111 @@ function HomePage() {
               ? "Hypothesis Disproved"
               : "Results Inconclusive"}
           </p>
+
+          {/* Graph Display Toggle */}
+          {chickenResults.experimentData && (
+            <div className="graph-toggle">
+              <button
+                className={`toggle-btn ${showAverageGraph ? "active" : ""}`}
+                onClick={() => setShowAverageGraph(true)}
+              >
+                Average View
+              </button>
+              <button
+                className={`toggle-btn ${!showAverageGraph ? "active" : ""}`}
+                onClick={() => setShowAverageGraph(false)}
+              >
+                Detailed View
+              </button>
+            </div>
+          )}
+
+          {/* Graph Container */}
+          {chickenResults.experimentData && (
+            <div className="results-graph">
+              {showAverageGraph ? (
+                <Bar
+                  data={{
+                    labels: ["Average Eggs per Day"],
+                    datasets: [
+                      {
+                        label: chickenResults.firstValue || "Condition 1",
+                        data: [chickenResults.avgEggsWithMusic],
+                        backgroundColor: "rgba(75, 192, 192, 0.6)",
+                        borderColor: "rgba(75, 192, 192, 1)",
+                        borderWidth: 1,
+                      },
+                      {
+                        label: chickenResults.comparisonValue || "Condition 2",
+                        data: [chickenResults.avgEggsWithoutMusic],
+                        backgroundColor: "rgba(153, 102, 255, 0.6)",
+                        borderColor: "rgba(153, 102, 255, 1)",
+                        borderWidth: 1,
+                      },
+                    ],
+                  }}
+                  options={{
+                    plugins: {
+                      title: {
+                        display: true,
+                        text: `Average Eggs Produced Per Day`,
+                        font: { size: 16 },
+                        padding: { top: 10, bottom: 30 },
+                      },
+                      legend: { position: "bottom" },
+                    },
+                    responsive: true,
+                    maintainAspectRatio: true,
+                  }}
+                />
+              ) : (
+                <Line
+                  data={{
+                    labels: chickenResults.experimentData.map(
+                      (entry) => `Day ${entry.day}`
+                    ),
+                    datasets: [
+                      {
+                        label: chickenResults.firstValue || "Condition 1",
+                        data: chickenResults.experimentData.map(
+                          (entry) => entry.eggsWithMusic
+                        ),
+                        borderColor: "rgba(75, 192, 192, 1)",
+                        backgroundColor: "rgba(75, 192, 192, 0.2)",
+                        tension: 0.4,
+                      },
+                      {
+                        label: chickenResults.comparisonValue || "Condition 2",
+                        data: chickenResults.experimentData.map(
+                          (entry) => entry.eggsWithoutMusic
+                        ),
+                        borderColor: "rgba(153, 102, 255, 1)",
+                        backgroundColor: "rgba(153, 102, 255, 0.2)",
+                        tension: 0.4,
+                      },
+                    ],
+                  }}
+                  options={{
+                    plugins: {
+                      title: {
+                        display: true,
+                        text: `Egg Production per day: ${
+                          chickenResults.firstValue || "Condition 1"
+                        } vs ${
+                          chickenResults.comparisonValue || "Condition 2"
+                        }`,
+                        font: { size: 16 },
+                        padding: { top: 10, bottom: 30 },
+                      },
+                      legend: { position: "bottom" },
+                    },
+                    responsive: true,
+                    maintainAspectRatio: true,
+                  }}
+                />
+              )}
+            </div>
+          )}
 
           <div className="variables-section">
             <div className="variable-group">
