@@ -46,15 +46,20 @@ function ReturnChickenHypothesis() {
     dependent: [],
     controlled: [],
   });
+  const [musicEnabled, setMusicEnabled] = useState(false);
 
-  // Use useEffect to safely set the state after component mounts
   useEffect(() => {
     if (location.state) {
+      const controlledVars = location.state.controlled || [];
+
       setSelectedVariables({
         independent: location.state.independent || [],
         dependent: location.state.dependent || [],
-        controlled: location.state.controlled || [],
+        controlled: controlledVars,
       });
+
+      // Check if music is enabled based on controlled variables
+      setMusicEnabled(controlledVars.includes("Presence of Music"));
     }
   }, [location]);
 
@@ -160,6 +165,7 @@ function ReturnChickenHypothesis() {
           formData.comparisonValue || "[Comparison]"
         }`;
         break;
+
       case "Type Of Music":
         hypothesis = `Playing ${
           formData.firstValue || "[Music Type]"
@@ -167,6 +173,7 @@ function ReturnChickenHypothesis() {
           formData.comparisonValue || "[Comparison]"
         }`;
         break;
+
       case "Volume Level":
         hypothesis = `Playing music at a ${
           formData.firstValue || "[Volume Level]"
@@ -185,15 +192,15 @@ function ReturnChickenHypothesis() {
         break;
 
       case "Breed Of Chickens":
-        hypothesis = `Playing music for ${
-          formData.firstValue || "[Breed]"
-        } chickens will result in ${formData.effect} eggs compared to ${
+        hypothesis = `${formData.firstValue || "[Breed]"} chickens will lay ${
+          formData.effect
+        } eggs compared to ${
           formData.comparisonValue || "[Comparison Breed]"
         } chickens`;
         break;
 
       case "Environmental Conditions":
-        hypothesis = `Chickens listening to music in ${
+        hypothesis = `Chickens in ${
           formData.firstValue || "[Condition]"
         } conditions will lay ${formData.effect} eggs than chickens in ${
           formData.comparisonValue || "[Comparison Condition]"
@@ -201,15 +208,25 @@ function ReturnChickenHypothesis() {
         break;
 
       case "Diet and Nutrition":
-        hypothesis = `Chickens listening to music with a ${
-          formData.firstValue || "[Diet]"
-        } diet will lay ${formData.effect} eggs than chickens with a ${
-          formData.comparisonValue || "[Comparison Diet]"
-        } diet`;
+        if (musicEnabled) {
+          hypothesis = `Chickens with a ${
+            formData.firstValue || "[Diet]"
+          } diet listening to music will lay ${
+            formData.effect
+          } eggs than chickens with a ${
+            formData.comparisonValue || "[Comparison Diet]"
+          } diet also listening to music`;
+        } else {
+          hypothesis = `Chickens with a ${
+            formData.firstValue || "[Diet]"
+          } diet will lay ${formData.effect} eggs than chickens with a ${
+            formData.comparisonValue || "[Comparison Diet]"
+          } diet (no music for either group)`;
+        }
         break;
 
       case "Stress Levels":
-        hypothesis = `Chickens listening to music with ${
+        hypothesis = `Chickens with ${
           formData.firstValue || "[Stress Level]"
         } stress levels will lay ${formData.effect} eggs than chickens with ${
           formData.comparisonValue || "[Comparison Stress Level]"
@@ -217,21 +234,17 @@ function ReturnChickenHypothesis() {
         break;
 
       case "Age Of Chickens":
-        hypothesis = `Chickens of ${
+        hypothesis = `${
           formData.firstValue || "[Age]"
-        } age will lay ${formData.effect} eggs than chickens of ${
+        } aged chickens will lay ${formData.effect} eggs than ${
           formData.comparisonValue || "[Comparison Age]"
-        } age`;
+        } aged chickens`;
         break;
 
       default:
         hypothesis = "Please select variables in the previous step.";
         break;
     }
-
-    const controlledVarsStatement = generateControlledVariables(
-      selectedVariables.controlled
-    );
 
     return `${hypothesis}`;
   };
@@ -584,7 +597,7 @@ function ReturnChickenHypothesis() {
       case "Diet and Nutrition":
         return (
           <div className="hypothesis-form">
-            <span>Chickens listening to music with </span>
+            <span>Chickens with </span>
             <div className="input-field">
               <select
                 name="firstValue"
@@ -601,7 +614,7 @@ function ReturnChickenHypothesis() {
               </select>
               <ErrorMessage error={formSubmitted && errors.firstValue} />
             </div>
-            <span> diet will lay </span>
+            <span> diet {musicEnabled ? "with music" : ""} will lay </span>
             <select
               name="effect"
               value={formData.effect}
@@ -628,7 +641,7 @@ function ReturnChickenHypothesis() {
               </select>
               <ErrorMessage error={formSubmitted && errors.comparisonValue} />
             </div>
-            <span> diet. </span>
+            <span> diet{musicEnabled ? " also with music" : ""}. </span>
             <div className="controlled-variables">
               {generateControlledVariables(selectedVariables.controlled)}
             </div>
@@ -636,7 +649,6 @@ function ReturnChickenHypothesis() {
           </div>
         );
 
-      // Stress Levels case
       case "Stress Levels":
         return (
           <div className="hypothesis-form">

@@ -76,6 +76,7 @@ const ChickenResults = () => {
   const firstValue = location.state?.firstValue || "No value provided.";
   const comparisonValue =
     location.state?.comparisonValue || "No value provided.";
+  const controlledVariables = location.state?.controlled || [];
   const [showIntro, setShowIntro] = useState(true);
   const [hypothesisResult, setHypothesisResult] = useState("");
   const [showCelebration, setShowCelebration] = useState(false);
@@ -100,8 +101,10 @@ const ChickenResults = () => {
     // Make sure selectedVars is an array, even if empty
     const controlledVars = Array.isArray(selectedVars) ? selectedVars : [];
 
-    console.log("Selected controlled vars:", controlledVars); // Debugging
+    // Log what we're working with
+    console.log("Getting non-selected variables. Selected:", controlledVars);
 
+    // List all possible variables based on the chicken experiment
     const allPossibleVars = [
       "Breed Of Chickens",
       "Type Of Music",
@@ -115,13 +118,16 @@ const ChickenResults = () => {
     ];
 
     // Filter to find non-selected variables, handle case differences
-    return allPossibleVars.filter(
+    const nonSelected = allPossibleVars.filter(
       (possibleVar) =>
         !controlledVars.some(
           (controlledVar) =>
             controlledVar.toLowerCase() === possibleVar.toLowerCase()
         )
     );
+
+    console.log("Non-selected variables:", nonSelected);
+    return nonSelected;
   };
 
   const handleIntro = () => {
@@ -280,17 +286,40 @@ const ChickenResults = () => {
   };
 
   const handlePublishResults = () => {
+    // Get controlled variables from location state, ensuring it's an array
+    const controlledVars = Array.isArray(location.state?.controlled)
+      ? location.state.controlled
+      : [];
+
+    // Get non-selected variables using our function
+    const nonSelectedVars = getNonSelectedVariables(controlledVars);
+
+    // Log what we're saving to help debug
+    console.log("Saving controlled variables to context:", controlledVars);
+    console.log("Saving non-selected variables to context:", nonSelectedVars);
+
     setChickenResults({
+      // Keep existing properties
       hypothesisResult,
       selectedConclusion,
       avgEggsWithMusic,
       avgEggsWithoutMusic,
       firstValue,
       comparisonValue,
-      controlledVariables: location.state?.controlled || [],
-      nonSelectedVariables: getNonSelectedVariables(
-        location.state?.controlled || []
-      ),
+
+      // Save controlled variables consistently
+      controlled: controlledVars,
+      controlledVariables: controlledVars, // Save in both formats for backward compatibility
+
+      // Save non-selected variables for display on the home page
+      nonSelectedVariables: nonSelectedVars,
+
+      // Make sure to include these other properties
+      hypothesis: hypothesis,
+      independent: location.state?.independent || [],
+      dependent: location.state?.dependent || ["Number of Eggs Produced"],
+
+      // Save other experiment data
       experimentData,
     });
 
@@ -874,21 +903,16 @@ const ChickenResults = () => {
                 Cancel
               </button>
               <button
-                // In ChickenResults.jsx, replace the navigation code in the onClick handler
-                // for the "Rerun Experiment with Full Data" button with this more robust solution:
-
                 onClick={() => {
                   setShowPublication(false);
-
-                  // Add debugging to see what controlled variables we have
+                  // Add before navigation
                   console.log(
-                    "Controlled variables in ChickenResults:",
+                    "Passing controlled variables to ChickenExperiment:",
                     location.state?.controlled
                   );
-
-                  // Now build the navigation state with properly structured data
                   navigate("/ChickenExperiment", {
                     state: {
+                      // Experiment metadata
                       experimentCount:
                         (location.state?.experimentCount || 1) + 1,
                       hypothesis: hypothesis,
@@ -896,31 +920,18 @@ const ChickenResults = () => {
                       comparisonValue: comparisonValue,
                       previousConclusion: selectedConclusion,
 
-                      // CRITICAL FIX: Pass controlled variables
-                      // Use the controlled variables we received from ChickenSketch
-                      controlled: location.state?.controlled || [],
-
-                      // Also pass independent and dependent for completeness
+                      // Critical variables
                       independent: location.state?.independent || [
                         "Presence of Music",
                       ],
                       dependent: location.state?.dependent || [
-                        "Amount of eggs layed",
+                        "Number of Eggs Produced",
                       ],
+                      controlled: location.state?.controlled || [],
 
-                      // Keep the nested experimentData for backward compatibility
-                      experimentData: {
-                        independent: location.state?.independent || [
-                          "Presence of Music",
-                        ],
-                        dependent: location.state?.dependent || [
-                          "Amount of eggs layed",
-                        ],
-                        controlled: location.state?.controlled || [],
-                        hypothesis: hypothesis,
-                        firstValue: firstValue,
-                        comparisonValue: comparisonValue,
-                      },
+                      // Make sure to include the actual experiment data from the first run
+                      // so it can be displayed in the second run
+                      experimentData: experimentData,
                     },
                   });
                 }}

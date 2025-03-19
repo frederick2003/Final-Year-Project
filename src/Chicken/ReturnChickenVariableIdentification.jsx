@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { GiPartyPopper } from "react-icons/gi";
 import "../Styling/TreeVariableIdentification.css";
 import "../Styling/HelpContainer.css";
@@ -33,6 +33,7 @@ function HelpSection() {
 }
 
 function ReturnChickenVariableIdentification() {
+  const location = useLocation();
   const Navigate = useNavigate();
   const [independentVariables, setIndependentVariables] = useState([]);
   const [dependentVariables, setDependentVariables] = useState([]);
@@ -40,6 +41,10 @@ function ReturnChickenVariableIdentification() {
   const [showIntro, setShowIntro] = useState(true);
   const [errors, setErrors] = useState({});
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [musicEnabled, setMusicEnabled] = useState(true);
+  const [presetControlledVariables, setPresetControlledVariables] = useState(
+    []
+  );
 
   const handleIntro = () => {
     setShowIntro(false);
@@ -69,17 +74,30 @@ function ReturnChickenVariableIdentification() {
   const goToChickenHypothesis = () => {
     setFormSubmitted(true);
 
-    if (!validateVariables()) {
-      // Scroll to top to ensure errors are visible
+    // Only validate that there's at least one controlled variable
+    if (controlledVariables.length === 0) {
+      setErrors({
+        controlled: "Please select at least one controlled variable",
+      });
       window.scrollTo(0, 0);
       return;
     }
+
+    const musicEnabled =
+      independentVariables.includes("Presence of Music") ||
+      independentVariables.includes("Type Of Music") ||
+      independentVariables.includes("Volume Level") ||
+      independentVariables.includes("Duration Of Music Exposure");
 
     Navigate("/ChickenHypothesis", {
       state: {
         independent: independentVariables,
         dependent: dependentVariables,
         controlled: controlledVariables,
+        presetExperiment: location.state?.presetExperiment,
+        firstValue: location.state?.firstValue,
+        comparisonValue: location.state?.comparisonValue,
+        musicEnabled: musicEnabled,
       },
     });
   };
@@ -88,42 +106,42 @@ function ReturnChickenVariableIdentification() {
     // Clear errors when user takes action
     setErrors({});
 
-    // Check if the item is already in any list
-    if (
-      independentVariables.includes(item) ||
-      controlledVariables.includes(item)
-    ) {
-      alert(
-        "Recheck your selected variables!\n" +
-          item +
-          " already exists in one of the lists."
-      );
-      return;
-    }
+    // Only allow adding to controlled variables
+    if (listType === 3) {
+      // Check if already in controlled variables
+      if (controlledVariables.includes(item)) {
+        alert(item + " is already selected as a controlled variable.");
+        return;
+      }
 
-    // Handle independent variables (only one allowed)
-    if (listType === 1) {
-      // Replace the existing independent variable if one exists
-      setIndependentVariables([item]);
-    }
-    // Handle controlled variables (multiple allowed)
-    else if (listType === 3) {
+      // Check if item is an independent variable
+      if (independentVariables.includes(item)) {
+        alert(item + " is already selected as the independent variable.");
+        return;
+      }
+
+      // Add to controlled variables
       setControlledVariables([...controlledVariables, item]);
     }
   };
-
   const clearList = (listType) => {
     // Clear related errors when a list is cleared
     if (listType === 1) {
       setIndependentVariables([]);
       setErrors((prev) => ({ ...prev, independent: null }));
     } else if (listType === 3) {
-      setControlledVariables([]);
+      // Only clear non-preset controlled variables
+      setControlledVariables([...presetControlledVariables]);
       setErrors((prev) => ({ ...prev, controlled: null }));
     }
   };
 
   const removeItem = (item, listType) => {
+    // Don't allow removing preset controlled variables
+    if (listType === 3 && presetControlledVariables.includes(item)) {
+      return;
+    }
+
     if (listType === 1) {
       setIndependentVariables(independentVariables.filter((v) => v !== item));
     } else if (listType === 3) {
@@ -146,10 +164,37 @@ function ReturnChickenVariableIdentification() {
   // Set fixed dependent variable for Chicken experiment
   const fixedDependentVariable = "Number of Eggs Produced";
 
-  // Set dependent variable automatically
+  // Modify the useEffect to handle preset variables
   useEffect(() => {
-    setDependentVariables([fixedDependentVariable]);
-  }, []);
+    if (location.state) {
+      // Set independent and dependent variables from location state
+      if (location.state.independent) {
+        setIndependentVariables(location.state.independent);
+      }
+
+      // Set dependent variable from location state or use default
+      if (location.state.dependent) {
+        setDependentVariables(location.state.dependent);
+      } else {
+        setDependentVariables(["Number of Eggs Produced"]);
+      }
+
+      // Set any preset controlled variables
+      if (location.state.controlled && location.state.controlled.length > 0) {
+        setControlledVariables(location.state.controlled);
+        setPresetControlledVariables(location.state.controlled);
+      }
+      // Determine if music is enabled based on the preset experiment type
+      if (location.state.presetExperiment === "noMusicDiet") {
+        setMusicEnabled(false);
+      } else {
+        setMusicEnabled(true);
+      }
+    } else {
+      // Default behavior if there's no state
+      setDependentVariables(["Number of Eggs Produced"]);
+    }
+  }, [location]);
 
   // Error display component
   const ErrorMessage = ({ error }) =>
@@ -169,41 +214,18 @@ function ReturnChickenVariableIdentification() {
             </div>
             <h2>Welcome to the Variable Identification Section!</h2>
             <p>
-              <strong>
-                You have now successfully completed your Background Research:
-                {"  "}
-                <GiPartyPopper />
-              </strong>
+              <strong>For this experiment, we're testing:</strong>
             </p>
             <p>
-              You should now have a rough idea how certain variables influence
-              the amount of eggs chickens lay.{" "}
-              <strong>
-                Your Task is to: select the variables you wish to test during
-                your experiment.
-              </strong>
+              Independent Variable: <strong>{independentVariables[0]}</strong>
             </p>
             <p>
-              <h3>Reminder</h3>
-              <li>
-                <strong>The Independent Variable: </strong>
-                is the one condition that you change in an experiment.{" "}
-              </li>
-              <li>
-                <strong>The Dependent Variable: </strong>is the variable that
-                you measure or observe.
-              </li>
-              <li>
-                <strong>Controlled variable: </strong>is a variable that does
-                not change during an experiment.
-              </li>
-            </p>
-            <p>
-              Select the variables you wish to test during your experiment by
-              clicking on the buttons.{" "}
+              <strong>Your Task:</strong> Select which variables you want to
+              control in your experiment to ensure accurate results. Controlling
+              more variables leads to a better experiment!
             </p>
             <button className="close-intro-button" onClick={handleIntro}>
-              Start Selecting...{" "}
+              Start Selecting...
             </button>
           </div>
         </div>
@@ -263,54 +285,54 @@ function ReturnChickenVariableIdentification() {
 
           {/* Variables grid */}
           <div className="tree-var-grid">
-            {sections.map((section) => (
-              <div className="tree-var-item" key={section}>
-                <div className="tree-var-item-name">{section}</div>
-                <div className="tree-var-buttons">
-                  <button
-                    className="tree-var-btn tree-var-btn-indep"
-                    onClick={() => addToList(section, 1)}
-                  >
-                    Independent
-                  </button>
-                  <button
-                    className="tree-var-btn tree-var-btn-control"
-                    onClick={() => addToList(section, 3)}
-                  >
-                    Controlled
-                  </button>
+            {sections
+              // Filter out the independent variable from the sections list
+              .filter((section) => !independentVariables.includes(section))
+              // Filter out controlled variables that are already selected
+              .filter((section) => !controlledVariables.includes(section))
+              // Filter out music-related variables if music is not enabled
+              .filter((section) => {
+                if (!musicEnabled) {
+                  return ![
+                    "Presence of Music",
+                    "Type Of Music",
+                    "Volume Level",
+                    "Duration Of Music Exposure",
+                  ].includes(section);
+                }
+                return true;
+              })
+              .map((section) => (
+                <div className="tree-var-item" key={section}>
+                  <div className="tree-var-item-name">{section}</div>
+                  <div className="tree-var-buttons">
+                    <button
+                      className="tree-var-btn tree-var-btn-control"
+                      onClick={() => addToList(section, 3)}
+                    >
+                      Controlled
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
 
         {/* Right side: Selected variables lists */}
         <div className="tree-var-lists">
           {/* Independent variables list */}
-          <div
-            className={`tree-var-list tree-var-list-indep ${
-              formSubmitted && errors.independent ? "tree-var-list-error" : ""
-            }`}
-          >
+          <div className="tree-var-list tree-var-list-indep">
             <div className="tree-var-list-header">
-              <h3>Independent Variables</h3>
-              <button className="tree-var-clear" onClick={() => clearList(1)}>
-                Clear All
-              </button>
+              <h3>Independent Variable </h3>
             </div>
-            <ErrorMessage error={formSubmitted && errors.independent} />
             <ul className="tree-var-items">
               {independentVariables.map((item, index) => (
-                <li className="tree-var-item-listed" key={index}>
+                <li
+                  className="tree-var-item-listed fixed-dependent"
+                  key={index}
+                >
                   {item}
-                  <button
-                    className="tree-var-remove-btn"
-                    onClick={() => removeItem(item, 1)}
-                    title="Remove item"
-                  >
-                    ×
-                  </button>
+                  {/* No remove button */}
                 </li>
               ))}
             </ul>
@@ -348,13 +370,15 @@ function ReturnChickenVariableIdentification() {
               {controlledVariables.map((item, index) => (
                 <li className="tree-var-item-listed" key={index}>
                   {item}
-                  <button
-                    className="tree-var-remove-btn"
-                    onClick={() => removeItem(item, 3)}
-                    title="Remove item"
-                  >
-                    ×
-                  </button>
+                  {!presetControlledVariables.includes(item) && (
+                    <button
+                      className="tree-var-remove-btn"
+                      onClick={() => removeItem(item, 3)}
+                      title="Remove item"
+                    >
+                      ×
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>

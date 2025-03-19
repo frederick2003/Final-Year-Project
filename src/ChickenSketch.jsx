@@ -154,7 +154,7 @@ const ChickenExperiment = () => {
   }, [location]);
 
   class Hen {
-    constructor(x, y, group, boundaryX) {
+    constructor(x, y, group, boundaryX, diet = "balanced") {
       this.x = x;
       this.y = y;
       this.group = group;
@@ -165,6 +165,7 @@ const ChickenExperiment = () => {
       this.movementCounter = 0;
       this.movementInterval = Math.floor(Math.random() * 60) + 30; // random movement pattern
       this.speed = Math.random() * 0.7 + 0.3; // random speed
+      this.diet = diet;
     }
 
     move() {
@@ -261,16 +262,50 @@ const ChickenExperiment = () => {
   const updateChickens = (num) => {
     let music = [];
     let noMusic = [];
+    // Add logic to determine diets based on experiment parameters
+    const testingDiet =
+      (Array.isArray(experimentData.independent) &&
+        experimentData.independent.includes("Diet and Nutrition")) ||
+      experimentData.independent === "Diet and Nutrition";
+
+    let firstDiet = "balanced";
+    let secondDiet = "balanced";
+
+    if (testingDiet) {
+      const firstValueLower = experimentData.firstValue?.toLowerCase() || "";
+      const comparisonValueLower =
+        experimentData.comparisonValue?.toLowerCase() || "";
+
+      if (firstValueLower.includes("high protein")) {
+        firstDiet = "high protein";
+      } else if (firstValueLower.includes("low protein")) {
+        firstDiet = "low protein";
+      }
+
+      if (comparisonValueLower.includes("high protein")) {
+        secondDiet = "high protein";
+      } else if (comparisonValueLower.includes("low protein")) {
+        secondDiet = "low protein";
+      }
+    }
+
     for (let i = 0; i < num; i++) {
       music.push(
-        new Hen(Math.random() * 380 + 410, Math.random() * 280 + 70, "music")
+        new Hen(
+          Math.random() * 380 + 410,
+          Math.random() * 280 + 70,
+          "music",
+          undefined,
+          firstDiet
+        )
       );
       noMusic.push(
         new Hen(
           Math.random() * 380 + 10,
           Math.random() * 280 + 70,
           "noMusic",
-          380
+          380,
+          secondDiet
         )
       );
     }
@@ -284,6 +319,7 @@ const ChickenExperiment = () => {
     updateChickens(num);
   };
 
+  // In the startExperiment function, move the dietMultipliers and diet-related logic BEFORE generating results
   const startExperiment = () => {
     if (chickensPerGroup <= 0 || days <= 0) {
       alert("Please set valid numbers of chickens and days!");
@@ -293,24 +329,7 @@ const ChickenExperiment = () => {
     setExperimentStarted(true);
     let results = [];
 
-    // Generate more realistic data with slight advantage for music group
-    for (let day = 1; day <= days; day++) {
-      let musicBaseRate = 0.65 + Math.random() * 0.2; // 60-80% egg rate
-      let noMusicBaseRate = 0.6 + Math.random() * 0.2; // 50-70% egg rate
-
-      let musicEggs = Math.floor(chickensPerGroup * musicBaseRate);
-      let noMusicEggs = Math.floor(chickensPerGroup * noMusicBaseRate);
-
-      results.push({
-        day,
-        eggsWithMusic: musicEggs,
-        eggsWithoutMusic: noMusicEggs,
-      });
-    }
-
-    setEggCounts(results);
-
-    // Get the complete formatted values using getIndependentVariableValues
+    // Get independentVar first
     let independentVar = "";
     if (
       Array.isArray(experimentData.independent) &&
@@ -326,11 +345,69 @@ const ChickenExperiment = () => {
       independentVar = "Presence of Music"; // Default fallback
     }
 
+    // Define diet multipliers
+    const dietMultipliers = {
+      "high protein": 1.3, // 30% increase for high protein
+      balanced: 1.0, // standard rate for balanced diet
+      "low protein": 0.7, // 30% decrease for low protein
+    };
+
+    // Generate more realistic data with adjustments for the independent variable
+    for (let day = 1; day <= days; day++) {
+      let musicBaseRate = 0.65 + Math.random() * 0.2; // 65-85% egg rate
+      let noMusicBaseRate = 0.6 + Math.random() * 0.2; // 60-80% egg rate
+
+      // Apply diet multipliers if testing diet
+      if (independentVar === "Diet and Nutrition") {
+        // Get the diet type from the experimental data
+        const firstValueLower = experimentData.firstValue?.toLowerCase() || "";
+        const comparisonValueLower =
+          experimentData.comparisonValue?.toLowerCase() || "";
+
+        // Apply multipliers based on diet type
+        let firstValueMultiplier = 1.0;
+        let comparisonValueMultiplier = 1.0;
+
+        Object.keys(dietMultipliers).forEach((dietType) => {
+          if (firstValueLower.includes(dietType)) {
+            firstValueMultiplier = dietMultipliers[dietType];
+          }
+          if (comparisonValueLower.includes(dietType)) {
+            comparisonValueMultiplier = dietMultipliers[dietType];
+          }
+        });
+
+        // Apply multipliers to egg rates
+        musicBaseRate *= firstValueMultiplier;
+        noMusicBaseRate *= comparisonValueMultiplier;
+      }
+
+      // Ensure rates stay within reasonable bounds
+      musicBaseRate = Math.min(1, Math.max(0, musicBaseRate));
+      noMusicBaseRate = Math.min(1, Math.max(0, noMusicBaseRate));
+
+      let musicEggs = Math.floor(chickensPerGroup * musicBaseRate);
+      let noMusicEggs = Math.floor(chickensPerGroup * noMusicBaseRate);
+
+      results.push({
+        day,
+        eggsWithMusic: musicEggs,
+        eggsWithoutMusic: noMusicEggs,
+      });
+    }
+
+    setEggCounts(results);
+
+    // Get the complete formatted values using getIndependentVariableValues
     const formattedValues = getIndependentVariableValues(
       independentVar,
       experimentData
     );
 
+    console.log(
+      "About to navigate with controlled variables:",
+      experimentData.controlled
+    );
     // Navigate to results page after 3 seconds to show animation
     setTimeout(() => {
       navigate("/ChickenResultsPage", {
@@ -343,6 +420,10 @@ const ChickenExperiment = () => {
           days: days,
           experimentCount: experimentCount,
           previousConclusion: previousConclusion,
+
+          controlled: experimentData.controlled,
+          independent: experimentData.independent,
+          dependent: experimentData.dependent,
         },
       });
     }, 3000);
