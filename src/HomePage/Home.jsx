@@ -80,7 +80,7 @@ function HomePage() {
 
   return (
     <div>
-      <h1>Chicken Egg Production MicroWorld</h1>
+      <h1>Scientific Method MicroWorld</h1>
       <div className="experiments-container">
         {/* Experiment 1: Music vs No Music */}
         <div className="experiment-section">
