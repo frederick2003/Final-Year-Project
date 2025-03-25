@@ -343,6 +343,7 @@ const ChickenExperiment = () => {
           days: days,
           experimentCount: experimentCount,
           previousConclusion: previousConclusion,
+          controlled: experimentData.controlled || [],
         },
       });
     }, 3000);

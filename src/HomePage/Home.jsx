@@ -1,11 +1,36 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./HomepageStyle.css";
 import MicroworldDescription from "./Description.jsx";
 import { useResults } from "../ResultsContext";
+import { Bar, Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 function HomePage() {
   const Navigate = useNavigate();
+  const [chickenGraphType, setChickenGraphType] = useState("bar"); // 'bar' for average or 'line' for full data
 
   const goToTreeBackgroundReasearch = () => {
     Navigate("/TreeBackgroundReasearch");

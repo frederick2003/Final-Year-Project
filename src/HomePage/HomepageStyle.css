@@ -373,3 +373,36 @@ h3 {
 .reset-all-btn:hover {
   background-color: #c9302c;
 }
+.experiment-graph {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f5f5f5;
+}
+
+.graph-container {
+  height: 250px;
+  margin: 15px 0;
+}
+
+.graph-toggle-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.graph-toggle-btn {
+  padding: 5px 10px;
+  background-color: #e0e0e0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.graph-toggle-btn.active {
+  background-color: #4caf50;
+  color: white;
+  border-color: #3d8b40;
+}
