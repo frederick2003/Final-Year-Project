@@ -97,7 +97,6 @@ function HomePage() {
           </div>
         </div>
 
-        {/* Experiment 2: Rock vs Classical Music */}
         <div className="experiment-section">
           <div className="card">
             <button onClick={goToRockVsClassical}>
@@ -321,23 +320,54 @@ function HomePage() {
               <ul>
                 {Array.isArray(chickenResults.controlled) &&
                 chickenResults.controlled.length > 0 ? (
-                  chickenResults.controlled.map((variable, index) => (
-                    <li key={`controlled-${index}`}>{variable}</li>
-                  ))
+                  // Filter out any variables that match independent variables
+                  chickenResults.controlled
+                    .filter((controlVar) => {
+                      // If independent is an array, make sure controlVar is not in it
+                      if (Array.isArray(chickenResults.independent)) {
+                        return !chickenResults.independent.some(
+                          (indVar) =>
+                            indVar.toLowerCase() === controlVar.toLowerCase()
+                        );
+                      }
+                      // If independent is a string, make sure controlVar doesn't equal it
+                      return (
+                        chickenResults.independent?.toLowerCase() !==
+                        controlVar.toLowerCase()
+                      );
+                    })
+                    .map((variable, index) => (
+                      <li key={`controlled-${index}`}>{variable}</li>
+                    ))
                 ) : (
                   <li>None specifically controlled</li>
                 )}
               </ul>
             </div>
-
             <div className="variable-group">
               <h4>Non-Controlled Variables:</h4>
               <ul>
                 {Array.isArray(chickenResults.nonSelectedVariables) &&
                 chickenResults.nonSelectedVariables.length > 0 ? (
-                  chickenResults.nonSelectedVariables.map((variable, index) => (
-                    <li key={`non-controlled-${index}`}>{variable}</li>
-                  ))
+                  // Filter out any variables that match independent variables
+                  chickenResults.nonSelectedVariables
+                    .filter((nonControlVar) => {
+                      // If independent is an array, make sure nonControlVar is not in it
+                      if (Array.isArray(chickenResults.independent)) {
+                        return !chickenResults.independent.some(
+                          (indVar) =>
+                            indVar.toLowerCase() === nonControlVar.toLowerCase()
+                        );
+                      }
+                      // If independent is a string, make sure nonControlVar doesn't equal it
+                      return (
+                        chickenResults.independent?.toLowerCase() !==
+                        nonControlVar.toLowerCase()
+                      );
+                    })
+                    .map((variable, index) => (
+                      <li key={`non-controlled-${index}`}>{variable}</li>
+                    ))
                 ) : (
                   <li>All variables were controlled</li>
                 )}
